@@ -55,8 +55,12 @@ function admin_query() {
         "FROM `entries`, `tas` WHERE status=2 AND tas.id=entries.ta_id AND entries.semester=? GROUP BY ta_id";
 }
 
+function laststudents_admin_query() {
+    return "SELECT entries.*, tas.email as ta_email, topics.name as topic_name, TIMESTAMPDIFF(SECOND, entries.help_time, entries.exit_time) as help_duration FROM `entries` LEFT JOIN `tas` on tas.id=entries.ta_id LEFT JOIN `topics` ON topics.id=entries.topic_id WHERE entries.status=2 AND entries.semester=? AND entries.help_time >= ? ORDER BY entries.help_time DESC";
+}
+
 function laststudents_query() {
-    return "SELECT entries.*, topics.name as topic_name, TIMESTAMPDIFF(SECOND, entries.help_time, entries.exit_time) as help_duration FROM `entries` LEFT JOIN `topics` ON topics.id=entries.topic_id WHERE entries.status=2 AND entries.semester=? AND entries.ta_id=? AND entries.help_time >= ? ORDER BY entries.help_time DESC";
+    return "SELECT entries.*, tas.email as ta_email, topics.name as topic_name, TIMESTAMPDIFF(SECOND, entries.help_time, entries.exit_time) as help_duration FROM `entries` LEFT JOIN `tas` on tas.id=entries.ta_id LEFT JOIN `topics` ON topics.id=entries.topic_id WHERE entries.status=2 AND entries.semester=? AND entries.ta_id=? AND entries.help_time >= ? ORDER BY entries.help_time DESC";
 }
 
 function parseDate(string, format) {
@@ -95,7 +99,14 @@ exports.get = function(req, res) {
         return Promise.resolve([null]);
     }).then(function(results) {
         individual = results[0];
-        if (p.is_ta(req)) {
+        if (p.is_admin(req)) {
+            var begintime = new Date();
+            begintime.setDate(begintime.getDate()-6);
+            return model.sql.query(laststudents_admin_query(), {
+                type: model.sql.QueryTypes.SELECT,
+                replacements: [current_semester, begintime]
+            });
+        } else if (p.is_ta(req)) {
             var begintime = new Date();
             begintime.setDate(begintime.getDate()-6);
             return model.sql.query(laststudents_query(), {
