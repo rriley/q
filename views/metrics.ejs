@@ -39,7 +39,7 @@ function duration_format(seconds) {
     <tr><th>Name</th><th>Andrew ID</th><th>Topic</th><th>Help Time</th><th>Help Duration</th><th>TA</th></tr>
     </thead><tbody>
     <% laststudents.forEach(function(entry) { %>
-    <tr><td><%= entry.name %></td><td><%= entry.user_id %></td><td><%= entry.topic_name ? entry.topic_name : "other" %></td><td><%= entry.help_time %></td><td><%= duration_format(entry.help_duration) %></td><td><%= entry.ta_email %></td></td></tr>
+    <tr><td><%= entry.name %></td><td><%= entry.user_id %></td><td><%= entry.topic_name ? entry.topic_name : "other" %></td><td><%= entry.help_time %></td><td><%= duration_format(entry.help_duration) %></td><td><%= entry.ta_email.substring(0,entry.ta_email.indexOf("@")) %></td></td></tr>
     <% }); %>
     </tbody></table>
     <% } %>
