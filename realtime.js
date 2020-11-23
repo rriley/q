@@ -1,5 +1,6 @@
 var crypto = require("crypto");
 var model = require("./model.js");
+var config = require("./config.json");
 
 var sio;
 var ta_room = crypto.randomBytes(72).toString('base64');
@@ -8,7 +9,7 @@ var student_room = crypto.randomBytes(72).toString('base64');
 exports.seq = 0;
 
 exports.init = function(app) {
-    sio = require("socket.io")(app);
+    sio = require("socket.io")(app, {path: config.path + "/socket.io"});
 
     sio.on("connection", function(socket) {
         socket.join(student_room);

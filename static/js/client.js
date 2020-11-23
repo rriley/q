@@ -240,7 +240,8 @@ function checkAndUpdateSeq(message_seq) {
     seq = message_seq;
 }
 
-var socket = io();
+var pathname = window.location.pathname;
+var socket = io.connect({path: pathname+'socket.io'});
 socket.on("connect", function () {
     socket.emit("authenticate", unescape(getCookie("auth")));
     // notification permission request on connect
