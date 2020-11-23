@@ -101,7 +101,7 @@ function respond(req, res, message, data) {
         res.json({message: message, data: data});
     } else {
         if (message) {
-            res.cookie("toast", message);
+            res.cookie("toast", message, {path: config.path});
         }
         res.redirect(config.path + "/");
     }
