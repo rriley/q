@@ -27,7 +27,7 @@ exports.get = function(req, res) {
     var toast = null;
     if (req.cookies.toast) {
         toast = req.cookies.toast;
-        res.clearCookie("toast");
+        res.clearCookie("toast", {path: config.path});
     }
 
     options.current_semester().then(function(sem) {
