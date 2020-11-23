@@ -17,7 +17,7 @@
   <%_ } _%>
   </div>
   <%_ if (session && (session.TA || session.owner)) { _%>
-  <form id="message_form" method='POST' action="/options" class='center input-field'>
+  <form id="message_form" method='POST' action="<%= path %>/options" class='center input-field'>
     <input type='text' placeholder="most basic HTML tags are supported" style='width: 50%;' name="message" value='<%= message %>'>
     <button type='button' class='btn-flat' onclick="cancelEditMessage(); return false;">Cancel</button>
     <button type='submit' class='btn waves-effect waves-light cyan'>Submit</button>
@@ -106,8 +106,8 @@
   </div>
 </div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script type="text/javascript" src="/js/client.js"></script>
+<script src="<%= path %>/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="<%= path %>/js/client.js"></script>
 <script type="text/javascript">
 
 var seq = <%= seq %>;

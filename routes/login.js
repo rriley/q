@@ -6,7 +6,7 @@ var model = require("../model.js");
 var options = require("./options.js");
 
 var oauth2Client = new google.auth.OAuth2(config.google_id, config.google_secret,
-  config.protocol + "://" + config.domain + "/oauth2/callback"
+  config.protocol + "://" + config.domain + config.path + "/oauth2/callback"
 );
 var auth_url = oauth2Client.generateAuthUrl({
   scope: ["profile", "email"],
@@ -18,7 +18,7 @@ var auth_url_nodomaincheck = oauth2Client.generateAuthUrl({
 
 exports.get_login = function(req, res) {
     if (req.session && req.session.authenticated) {
-        res.redirect("/");
+        res.redirect(config.path+"/");
     } else if (req.query.domaincheck == 0) {
         res.redirect(auth_url_nodomaincheck);
     } else {
@@ -68,7 +68,7 @@ exports.get_callback = function(req, res) {
         });
     }).then(function() {
         res.cookie("auth", key, {"maxAge": 30*24*60*60*1000});
-        res.redirect("/");
+        res.redirect(config.path+"/");
     }).catch(errorHandler);
 };
 
@@ -77,5 +77,5 @@ exports.get_logout = function(req, res) {
         req.session.destroy();
     }
     res.clearCookie("auth");
-    res.redirect("/");
+    res.redirect(config.path+"/");
 };

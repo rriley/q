@@ -35,7 +35,7 @@ function submitAddForm(cooldown_override) {
     if (cooldown_override) {
         data = data + "&cooldown_override=1";
     }
-    $.post("/?json=1", data, function(result) {
+    $.post("?json=1", data, function(result) {
         if (result.data && result.data.cooldown_warning) {
             disable_updates = false;
             $("#modal_cooldown_time").text(result.data.cooldown_time);
@@ -240,7 +240,8 @@ function checkAndUpdateSeq(message_seq) {
     seq = message_seq;
 }
 
-var socket = io();
+var pathname = window.location.pathname;
+var socket = io.connect({path: pathname+'socket.io'});
 socket.on("connect", function () {
     socket.emit("authenticate", unescape(getCookie("auth")));
     // notification permission request on connect

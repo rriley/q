@@ -1,10 +1,10 @@
 <nav class="cyan" role="navigation">
   <div class="nav-wrapper container">
-    <span class="brand-logo hide-on-large-only"><a href="/"><%= title %></a></span>
+    <span class="brand-logo hide-on-large-only"><a href="<%= path %>/"><%= title %></a></span>
     <ul class="hide-on-med-and-down">
-      <li class="brand-logo" style="position: initial;"><h1><a href="/"><%= title %></a></h1></li>
+      <li class="brand-logo" style="position: initial;"><h1><a href="<%= path %>/"><%= title %></a></h1></li>
       <% if (session && (session.TA || session.owner)) { %>
-      <li style="margin-left: 10px;"><form method="POST" action="/options">
+      <li style="margin-left: 10px;"><form method="POST" action="<%= path %>/options">
       <% if (typeof frozen != 'undefined' && frozen) { %>
       <button class="waves-effect btn blue lighten-5 black-text freeze-btn freeze-input" name="frozen" value="0">Unfreeze</button>
       <% } else if (typeof frozen != 'undefined') { %>
@@ -17,12 +17,12 @@
       <% if (session && session.authenticated) { %>
       <li><span class="blue-text text-lighten-4">Logged in as <%=session.user_id %></span>
       <% if (session.TA || session.owner) { %>
-      <a class="waves-effect" href="/settings">Settings</a>
-      <a class="waves-effect" href="/metrics">Metrics</a>
+      <a class="waves-effect" href="<%= path %>/settings">Settings</a>
+      <a class="waves-effect" href="<%= path %>/metrics">Metrics</a>
       <% } %>
-      <a class="waves-effect" href="/logout">Log Out</a></li>
+      <a class="waves-effect" href="<%= path %>/logout">Log Out</a></li>
       <% } else { %>
-      <li><a class="waves-effect" href="/login">Log In</a></li>
+      <li><a class="waves-effect" href="<%= path %>/login">Log In</a></li>
       <% } %>
     </ul>
 
@@ -30,7 +30,7 @@
       <% if (session && session.authenticated) { %>
       <li class="cyan white-text" style="padding: 0px 20px;">Logged in as <%= session.user_id %></li>
       <% if (session.TA || session.owner) { %>
-      <li><form method="POST" action="/options">
+      <li><form method="POST" action="<%= path %>/options">
       <% if (typeof frozen != 'undefined' && frozen) { %>
       <input type="hidden" name="frozen" class="freeze-input" value="0">
       <a onclick="$(this).closest('form').submit();"><span class="freeze-btn">Unfreeze</span> Queue</a>
@@ -41,12 +41,12 @@
       </form></li>
       <% } %>
       <% if (session.TA || session.owner) { %>
-      <li><a href="/settings">Settings</a></li>
-      <li><a href="/metrics">Metrics</a></li>
+      <li><a href="<%= path %>/settings">Settings</a></li>
+      <li><a href="<%= path %>/metrics">Metrics</a></li>
       <% } %>
-      <li><a href="/logout">Log Out</a></li>
+      <li><a href="<%= path %>/logout">Log Out</a></li>
       <% } else { %>
-      <li><a class="waves-effect" href="/login">Log In</a></li>
+      <li><a class="waves-effect" href="<%= path %>/login">Log In</a></li>
       <% } %>
     </ul>
     <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>

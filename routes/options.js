@@ -1,3 +1,4 @@
+var Sequelize = require("sequelize");
 var sanitize = require('sanitize-html');
 
 var realtime = require("../realtime.js");
@@ -101,12 +102,12 @@ function respond(req, res, message, data) {
         res.json({message: message, data: data});
     } else {
         if (message) {
-            res.cookie("toast", message);
+            res.cookie("toast", message, {path: config.path});
         }
         if (req.headers.referer) {
             res.redirect(req.headers.referer);
         } else {
-            res.redirect("/");
+            res.redirect(config.path + "/");
         }
     }
 }

@@ -71,7 +71,7 @@ function parseDate(string, format) {
 
 exports.get = function(req, res) {
     if (!p.is_logged_in(req)) {
-        res.redirect("/login");
+        res.redirect(config.path + "/login");
         return;
     } else if (!p.is_ta(req) && !p.is_admin(req)) {
         res.sendStatus(403);
@@ -132,6 +132,7 @@ exports.get = function(req, res) {
             summary: summary,
             individual: individual,
             laststudents: laststudents,
+            path: config.path,
             admin: results
         });
     });

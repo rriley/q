@@ -15,6 +15,7 @@ var options = require("./routes/options.js");
 var metrics = require("./routes/metrics.js");
 var gettime = require("./routes/gettime.js");
 var settings = require("./routes/settings.js");
+var manifest = require("./routes/manifest.js");
 
 var app = express();
 var server = http.Server(app);
@@ -23,7 +24,7 @@ waittimes.init();
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({"extended": false}));
 app.use(cookieParser());
-app.use(express.static('static'));
+app.use(config.path, express.static('static'));
 app.use(function(req, res, next) {
     model.sql.sync().then(function() {
         if (!req.cookies.auth) {
@@ -40,22 +41,24 @@ app.use(function(req, res, next) {
     });
 });
 
-app.get("/", home.get);
-app.post("/", home.post);
+app.get(config.path+"/", home.get);
+app.post(config.path+"/", home.post);
 
-app.get("/login", login.get_login);
-app.get("/oauth2/callback", login.get_callback);
-app.get("/logout", login.get_logout);
+app.get(config.path+"/login", login.get_login);
+app.get(config.path+"/oauth2/callback", login.get_callback);
+app.get(config.path+"/logout", login.get_logout);
 
-app.get("/options", options.get);
-app.post("/options", options.post);
+app.get(config.path+"/options", options.get);
+app.post(config.path+"/options", options.post);
 
-app.get("/waittime", gettime.get);
+app.get(config.path+"/waittime", gettime.get);
 
-app.get("/metrics", metrics.get);
-app.get("/metrics/counts.json", metrics.get_counts);
+app.get(config.path+"/metrics", metrics.get);
+app.get(config.path+"/metrics/counts.json", metrics.get_counts);
 
-app.get("/settings", settings.get);
-app.post("/settings", settings.post);
+app.get(config.path+"/settings", settings.get);
+app.post(config.path+"/settings", settings.post);
+
+app.get(config.path+"/manifest.json", manifest.get);
 
 server.listen(config.server_port);

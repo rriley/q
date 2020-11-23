@@ -27,17 +27,18 @@ exports.get = function(req, res) {
     var toast = null;
     if (req.cookies.toast) {
         toast = req.cookies.toast;
-        res.clearCookie("toast");
+        res.clearCookie("toast", {path: config.path});
     }
 
     options.current_semester().then(function(sem) {
         if (sem == "") {
             if (req.session && req.session.owner) {
-                res.redirect("/settings");
+                res.redirect(config.path + "/settings");
             } else {
                 res.render("splash", {
                     title: config.title,
                     session: req.session,
+                    path: config.path,
                     toast: toast
                 });
             }
@@ -88,6 +89,7 @@ exports.get = function(req, res) {
                 frozen: results.frozen,
                 message: results.message,
                 waittimes: waittimes.get(),
+                path: config.path,
                 toast: toast
             });
         });
@@ -99,9 +101,9 @@ function respond(req, res, message, data) {
         res.json({message: message, data: data});
     } else {
         if (message) {
-            res.cookie("toast", message);
+            res.cookie("toast", message, {path: config.path});
         }
-        res.redirect("/");
+        res.redirect(config.path + "/");
     }
 }
 
