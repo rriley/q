@@ -119,7 +119,7 @@ var chart = c3.generate({
 //var thirtyDaysAgo = new Date();
 //thirtyDaysAgo.setDate(thirtyDaysAgo.getDate()-30);
 var dailyRows = [["Date", "Number of Students/Day"]];
-$.get("/metrics/counts.json?granularity=day", function(json) {
+$.get("<%= path %>/metrics/counts.json?granularity=day", function(json) {
     json.forEach(function(item) {
         dailyRows.push([new Date(item.time), item.count]);
     });
@@ -128,7 +128,7 @@ $.get("/metrics/counts.json?granularity=day", function(json) {
     });
 });
 var hourlyRows = [["Hour", "Number of Students/Hr"]];
-$.get("/metrics/counts.json?granularity=hour", function(json) {
+$.get("<%= path %>/metrics/counts.json?granularity=hour", function(json) {
     json.forEach(function(item) {
         hourlyRows.push([new Date(item.time), item.count]);
     });

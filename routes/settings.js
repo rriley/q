@@ -10,7 +10,7 @@ var home = require("./home.js");
 
 exports.get = function(req, res) {
     if (!p.is_logged_in(req)) {
-        res.redirect("/login");
+        res.redirect(config.path+"/login");
         return;
     }
     if (!p.is_ta(req) && !p.is_owner(req)) {
@@ -63,7 +63,8 @@ exports.get = function(req, res) {
             tas: results.tas,
             owner_email: config.owner_email,
             is_admin: p.is_admin(req),
-            is_ta: p.is_ta(req)
+            is_ta: p.is_ta(req),
+            path: config.path
         });
     });
 };
@@ -75,7 +76,7 @@ function respond(req, res, message, data) {
         if (message) {
             res.cookie("toast", message);
         }
-        res.redirect("/settings");
+        res.redirect(config.path+"/settings");
     }
 }
 
@@ -274,7 +275,7 @@ function post_update_url(req, res) {
 
 exports.post = function(req, res) {
     if (!p.is_logged_in(req)) {
-        res.redirect("/login");
+        res.redirect(config.path+"/login");
         return;
     }
 

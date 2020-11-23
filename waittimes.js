@@ -118,7 +118,7 @@ exports.update = function() {
         }
         if (earliest_exceeded && now - earliest_exceeded >= time_threshold * 60 * 1000) {
             if (slack) {
-                slack.send("<!channel> The wait time is *" + Math.ceil(last_wait / 60) + " minutes* right now. More TAs might be needed. (<" + config.protocol + "://" + config.domain + "/|view»>)");
+                slack.send("<!channel> The wait time is *" + Math.ceil(last_wait / 60) + " minutes* right now. More TAs might be needed. (<" + config.protocol + "://" + config.domain + config.path + "/|view»>)");
             }
             earliest_exceeded = null;
         }
@@ -138,7 +138,7 @@ exports.update_slack = function() {
             slack = new SlackWebhook(webhook_url, {
                 defaults: {
                     "username": "QueueBot",
-                    "icon_url": config.protocol + "://" + config.domain + "/img/cmuq_small.png"
+                    "icon_url": config.protocol + "://" + config.domain + config.path + "/img/cmuq_small.png"
                 }
             });
         } else {

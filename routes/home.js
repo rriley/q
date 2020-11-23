@@ -33,11 +33,12 @@ exports.get = function(req, res) {
     options.current_semester().then(function(sem) {
         if (sem == "") {
             if (req.session && req.session.owner) {
-                res.redirect("/settings");
+                res.redirect(config.path + "/settings");
             } else {
                 res.render("splash", {
                     title: config.title,
                     session: req.session,
+                    path: config.path,
                     toast: toast
                 });
             }
@@ -88,6 +89,7 @@ exports.get = function(req, res) {
                 frozen: results.frozen,
                 message: results.message,
                 waittimes: waittimes.get(),
+                path: config.path,
                 toast: toast
             });
         });
@@ -101,7 +103,7 @@ function respond(req, res, message, data) {
         if (message) {
             res.cookie("toast", message);
         }
-        res.redirect("/");
+        res.redirect(config.path + "/");
     }
 }
 
