@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var config = require("./config.json");
 process.env.TZ = config.timezone;
 
