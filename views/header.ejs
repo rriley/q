@@ -19,6 +19,7 @@
       <% if (session.TA || session.owner) { %>
       <a class="waves-effect" href="<%= path %>/settings">Settings</a>
       <a class="waves-effect" href="<%= path %>/metrics">Metrics</a>
+      <a class="waves-effect" href="<%= path %>/history">History</a>
       <% } %>
       <a class="waves-effect" href="<%= path %>/logout">Log Out</a></li>
       <% } else { %>
@@ -43,6 +44,7 @@
       <% if (session.TA || session.owner) { %>
       <li><a href="<%= path %>/settings">Settings</a></li>
       <li><a href="<%= path %>/metrics">Metrics</a></li>
+      <li><a href="<%= path %>/history">History</a></li>
       <% } %>
       <li><a href="<%= path %>/logout">Log Out</a></li>
       <% } else { %>

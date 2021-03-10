@@ -15,6 +15,7 @@ var login = require("./routes/login.js");
 var home = require("./routes/home.js");
 var options = require("./routes/options.js");
 var metrics = require("./routes/metrics.js");
+var history = require("./routes/history.js");
 var gettime = require("./routes/gettime.js");
 var settings = require("./routes/settings.js");
 var manifest = require("./routes/manifest.js");
@@ -57,6 +58,8 @@ app.get(config.path+"/waittime", gettime.get);
 
 app.get(config.path+"/metrics", metrics.get);
 app.get(config.path+"/metrics/counts.json", metrics.get_counts);
+
+app.get(config.path+"/history", history.get);
 
 app.get(config.path+"/settings", settings.get);
 app.post(config.path+"/settings", settings.post);
