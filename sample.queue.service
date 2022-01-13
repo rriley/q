@@ -1,3 +1,4 @@
+# Copy this to queue.service
 # Modify the paths and names below
 # Symlink this into /etc/systemd/system
 # systemctl start queue
