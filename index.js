@@ -9,6 +9,7 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var model = require("./model.js");
 var realtime = require("./realtime.js");
+var notiftime = require("./notiftime.js");
 var waittimes = require("./waittimes.js");
 
 var login = require("./routes/login.js");
@@ -23,6 +24,7 @@ var manifest = require("./routes/manifest.js");
 var app = express();
 var server = http.Server(app);
 realtime.init(server);
+notiftime.init();
 waittimes.init();
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({"extended": false}));

@@ -18,7 +18,10 @@
   </div>
   <%_ if (session && (session.TA || session.owner)) { _%>
   <form id="message_form" method='POST' action="<%= path %>/options" class='center input-field'>
-    <input type='text' placeholder="most basic HTML tags are supported" style='width: 50%;' name="message" value='<%= message %>'>
+    <div class="container">
+      <textarea id="message" placeholder="Most basic HTML tags are supported" name="message" class="materialize-textarea"><%= message %></textarea>
+    </div>
+    <br>
     <button type='button' class='btn-flat' onclick="cancelEditMessage(); return false;">Cancel</button>
     <button type='submit' class='btn waves-effect waves-light cyan'>Submit</button>
   </form>
@@ -61,7 +64,7 @@
     <label for="user_id">Andrew ID</label>
   </div>
   <div class="input-field inline col l4 m4 s12">
-    <select novalidate id="topic" name="topic_id">
+    <select id="topic" class="topic" name="topic_id" required>
         <option value="" disabled selected hidden>Choose a topic</option>
       <%_ topics.forEach(function(topic) { _%>
         <option value="<%= topic.id %>"><%= topic.name %></option>
@@ -71,7 +74,7 @@
     <label for="topic">What would you like help with?</label>
   </div>
   <div class="input-field inline col l10 m10 s12">
-      <input id="question" name="question" type="text" minlength=3 required>
+      <textarea id="question" name="question" type="text" minlength=3 maxlength=255 data-length="255" required class="materialize-textarea"></textarea>
       <label for="question">Question</label>
   </div>
   <div class="input-field inline col l2 m2 s12 center-btn">
@@ -100,6 +103,36 @@
     <h4>You've just been helped</h4>
     <p>Use this time to think independently about the problem you're facing, try a different approach, or use other class resources to learn more about the topic. <strong>Please wait at least <span id="modal_cooldown_time"></span> before adding your name to the queue again.</strong></p>
     <p id="cooldown_override_text">If you have specific circumstances that require you to enter the queue immediately, you may do so by clicking <a href='javascript:;' id="cooldown_override_submit">here</a>, but please note that we may prioritize other students' questions before yours.</p>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:;" class="modal-close waves-effect light-blue-text text-darken-1 btn-flat">Close</a>
+  </div>
+</div>
+
+
+<div id="update_question_modal" class="modal">
+  <div class="modal-content center-align">
+    <h4>Please update your question!</h4>
+    <p>Before we can help, we need some more details from you.</p>
+    <p>Especially for homework problems, we can help you more effectively if we know <strong>what you've tried and/or already understand</strong> in addition to what you're looking for guidance on.
+    <%_ if (guide_url) { _%>
+        Be sure to read the
+        <a id="guide_url" href="<%= guide_url %>" target="_blank">
+          Asking Questions
+        </a> guide for more on this!
+    <%_ } _%>
+    </p>
+    <p>If you're having trouble rewording your question, enter "Need help with question" to ask a TA for help.</p>
+    <form method='POST'>
+      <input type='hidden' class='id-input' name='entry_id'>
+        <div class="row">
+          <div class="input-field col l12 m12 s12">
+            <textarea id="question" name="question" type="text" minlength=3 maxlength=255 data-length="255" required class="materialize-textarea"></textarea>
+            <label for="question">Question (max 255 characters)</label>
+          </div>
+        </div>
+      <button class='waves-effect waves-light btn cyan' name='action' value='UPDATE-QUESTION'>Update Question</button>
+    </form>
   </div>
   <div class="modal-footer">
     <a href="javascript:;" class="modal-close waves-effect light-blue-text text-darken-1 btn-flat">Close</a>
@@ -140,8 +173,9 @@ $(document).ready(function() {
         user_id: entry.user_id,
         topic_name: entry.topic ? entry.topic.name : "other",
         ta_full_name: entry.TA ? entry.TA.full_name : "",
-        question: entry.question
-    }); %>));
+        question: entry.question,
+        update_requested: entry.update_requested
+    }).replace(/<\//g, "<\\/"); %>));
     <%_ if (entry.status == 1) { %>
       $("#modal_ta_name").text("<%= entry.TA.full_name %>");
       <% if (entry.TA.video_chat_url && entry.TA.video_chat_url.length > 0) { %>
@@ -151,6 +185,9 @@ $(document).ready(function() {
         $("#modal_ta_video_chat_url").hide();
       <% } %>
       M.Modal.getInstance($("#help_modal")).open();
+    <%_ } else if (entry.update_requested) { %>
+        $("#update_question_modal").find(".id-input").val(<%= entry.id %>);
+        M.Modal.getInstance($("#update_question_modal")).open();
     <%_ } %>
   <%_ } else if (session && (session.TA || session.owner)) { _%>
     $("#queue").append(buildTAEntry(<%- JSON.stringify({
@@ -163,7 +200,8 @@ $(document).ready(function() {
         ta_full_name: entry.TA ? entry.TA.full_name : "",
         question: entry.question,
         cooldown_override: entry.cooldown_override,
-    }); %>));
+        update_requested: entry.update_requested
+  }).replace(/<\//g, "<\\/"); %>));
   <%_ } else { _%>
     $("#queue").append(buildStudentEntry(<%- JSON.stringify({
         id: entry.id,
