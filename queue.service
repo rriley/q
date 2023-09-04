@@ -1,0 +1,20 @@
+# Modify the paths and names below
+# Symlink this into /etc/systemd/system
+# systemctl start queue
+# systemctl enable queue
+[Unit]
+Description=OH Queue
+After=network.target
+
+[Service]
+ExecStart=/opt/q/index.js
+Restart=always
+User=rdriley
+# Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
+Group=rdriley
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/opt/q/
+
+[Install]
+WantedBy=multi-user.target
