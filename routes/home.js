@@ -9,6 +9,7 @@ var waittimes = require("../waittimes.js");
 var p = require("../permissions.js");
 var options = require("./options.js");
 var cookies = require("../cookies.js");
+var util = require("../util.js");
 
 // Upper bounds for the free-text fields students control.  The columns are
 // VARCHAR(255), and the question textarea already caps itself at 255 in the
@@ -52,7 +53,7 @@ exports.get = function(req, res) {
             }
             return;
         }
-        Sequelize.Promise.props({
+        util.props({
             entries: function() {
                 //don't re-query the database if nothing has changed
                 if (entries_cache) {
@@ -151,7 +152,7 @@ function post_add(req, res) {
         resolve();
     }).then(function() {
         // Make sure the user isn't already on the queue
-        return Sequelize.Promise.props({
+        return util.props({
             cooldown_time: options.cooldown_time(),
             entry: model.Entry.findOne({
                 where: {user_id: user_id},

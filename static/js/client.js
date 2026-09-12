@@ -129,6 +129,17 @@ $(document).ready(function() {
         submitAddForm(true);
     })
 
+    // Bound here rather than with onclick attributes, which a CSP nonce
+    // cannot cover.
+    $(document).on("click", ".edit-message", function(event) {
+        event.preventDefault();
+        editMessage();
+    });
+    $(document).on("click", ".cancel-edit-message", function(event) {
+        event.preventDefault();
+        cancelEditMessage();
+    });
+
     $('textarea#question').characterCounter();
 });
 

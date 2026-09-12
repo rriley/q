@@ -7,6 +7,7 @@ var p = require("../permissions.js");
 var config = require("../config.json");
 var options = require("./options.js");
 var home = require("./home.js");
+var util = require("../util.js");
 
 exports.get = function(req, res) {
     if (!p.is_logged_in(req)) {
@@ -27,7 +28,7 @@ exports.get = function(req, res) {
     var current_semester = null;
     options.current_semester().then(function(semester) {
         current_semester = semester;
-        return Sequelize.Promise.props({
+        return util.props({
             webhook_url: options.slack_webhook(),
             ask_question_guide_link: options.ask_question_guide_link(),
             cooldown_time: options.cooldown_time(),

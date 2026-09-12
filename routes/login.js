@@ -6,9 +6,14 @@ var model = require("../model.js");
 var options = require("./options.js");
 var cookies = require("../cookies.js");
 
-var oauth2Client = new google.auth.OAuth2(config.google_id, config.google_secret,
-  config.protocol + "://" + config.domain + config.path + "/oauth2/callback"
-);
+var redirect_uri = config.protocol + "://" + config.domain + config.path + "/oauth2/callback";
+
+// A fresh client per request.  get_callback sets credentials on it, and a
+// module-level client would mean two simultaneous logins could overwrite each
+// other's tokens.
+function oauth_client() {
+    return new google.auth.OAuth2(config.google_id, config.google_secret, redirect_uri);
+}
 
 // Which Google Workspace domain accounts have to belong to.  Set
 // "allowed_domain" to "" (or null) in config.json to accept any Google
@@ -36,7 +41,7 @@ function auth_url(state, domaincheck) {
     if (domaincheck && allowed_domain) {
         params.hd = allowed_domain;
     }
-    return oauth2Client.generateAuthUrl(params);
+    return oauth_client().generateAuthUrl(params);
 }
 
 exports.get_login = function(req, res) {
@@ -74,10 +79,13 @@ exports.get_callback = function(req, res) {
         return;
     }
 
-    oauth2Client.getToken(req.query.code).then(function(result) {
-        return google.oauth2("v2").userinfo.get({
-            access_token: result.tokens.access_token
-        });
+    var client = oauth_client();
+    client.getToken(req.query.code).then(function(result) {
+        // Authenticate with an Authorization: Bearer header rather than an
+        // ?access_token= query parameter, which Google deprecated and which
+        // would put the token in every access log along the way.
+        client.setCredentials(result.tokens);
+        return google.oauth2({version: "v2", auth: client}).userinfo.get();
     }).then(function(userinfo) {
         var profile = userinfo.data;
         // Google only vouches for the address if it says it's verified.

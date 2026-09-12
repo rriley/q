@@ -75,7 +75,7 @@ function duration_format(seconds) {
 <% } %>
 
 </div>
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%= csp_nonce %>">
 var dateFormat = d3.time.format.utc("%Y-%m-%d");
 var chart = c3.generate({
     bindto: '#daily_count',

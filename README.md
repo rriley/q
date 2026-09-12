@@ -15,7 +15,9 @@ If you have a Slack team set up for your course, you can set up a Slack Incoming
 
 ## Install
 
-1. Install [Node.js](https://nodejs.org)
+1. Install [Node.js](https://nodejs.org) — version 22.12 or newer is required
+   (`sanitize-html` and `googleapis` both refuse older releases). The Docker
+   image builds on `node:24-alpine`.
 2. Clone this repository
 3. In the root directory, create the file `config.json` with the following structure
    (if you're running with Docker Compose instead, skip the `mysql_host`/`mysql_db`/

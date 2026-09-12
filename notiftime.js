@@ -17,6 +17,7 @@ var Sequelize = require('sequelize');
 var model = require("./model.js");
 var realtime = require("./realtime.js");
 var options = require("./routes/options.js");
+var util = require("./util.js");
 
 /** Number of milliseconds in a minute */
 const one_min_ms = 60 * 1000;
@@ -27,7 +28,7 @@ exports.init = function() {
         var now = new Date();
         
         // Find all actively helping TAs
-        Sequelize.Promise.props({
+        util.props({
             notif_time_threshold: options.notif_time_threshold(),
             notif_time_interval: options.notif_time_interval(),
             tas: model.TA.findAll({

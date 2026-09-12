@@ -36,10 +36,10 @@
         <input type="hidden" name="_csrf" value="<%= csrf_token %>">
       <% if (typeof frozen != 'undefined' && frozen) { %>
       <input type="hidden" name="frozen" class="freeze-input" value="0">
-      <a onclick="$(this).closest('form').submit();"><span class="freeze-btn">Unfreeze</span> Queue</a>
+      <a href="#" class="submit-parent-form"><span class="freeze-btn">Unfreeze</span> Queue</a>
       <% } else if (typeof frozen != 'undefined') { %>
       <input type="hidden" name="frozen" class="freeze-input" value="1">
-      <a onclick="$(this).closest('form').submit();"><span class="freeze-btn">Freeze</span> Queue</a>
+      <a href="#" class="submit-parent-form"><span class="freeze-btn">Freeze</span> Queue</a>
       <% } %>
       </form></li>
       <% } %>
@@ -56,8 +56,14 @@
     <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
   </div>
 </nav>
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%= csp_nonce %>">
 $(document).ready(function() {
     $(".sidenav").sidenav();
+    // Bound here rather than with an onclick attribute: inline event handlers
+    // can't be covered by a CSP nonce.
+    $(document).on("click", ".submit-parent-form", function(event) {
+        event.preventDefault();
+        $(this).closest("form").submit();
+    });
 });
 </script>

@@ -5,13 +5,13 @@ process.env.TZ = config.timezone;
 
 var http = require('http');
 var express = require('express');
-var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var model = require("./model.js");
 var realtime = require("./realtime.js");
 var notiftime = require("./notiftime.js");
 var waittimes = require("./waittimes.js");
 var csrf = require("./csrf.js");
+var security = require("./security.js");
 
 var login = require("./routes/login.js");
 var home = require("./routes/home.js");
@@ -26,7 +26,13 @@ var app = express();
 var server = http.Server(app);
 realtime.init(server);
 app.set('view engine', 'ejs')
-app.use(bodyParser.urlencoded({"extended": false}));
+// Security headers first, so they're set even on responses that
+// short-circuit later (static files, redirects, errors).
+app.use(security.nonce);
+app.use(security.headers);
+// express.urlencoded is body-parser, bundled with express since 4.16,
+// so the versions can no longer drift apart.
+app.use(express.urlencoded({"extended": false}));
 app.use(cookieParser());
 app.use(config.path, express.static('static'));
 // After the static mount (static files need no token) and after
