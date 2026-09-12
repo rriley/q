@@ -16,3 +16,13 @@ exports.props = function(obj) {
         return resolved;
     });
 };
+
+// Serialises a value for embedding inside an inline <script> block.
+//
+// JSON.stringify does not escape "</", so a string containing "</script>"
+// would close the block early and everything after it would be parsed as
+// markup.  Two of the three call sites in home.ejs had this escaping inlined
+// and the third didn't; this exists so they can't drift apart again.
+exports.json_for_script = function(value) {
+    return JSON.stringify(value).replace(/<\//g, "<\\/");
+};

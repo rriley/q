@@ -22,9 +22,14 @@ function secure_options(extra) {
     return opts;
 }
 
-// The session cookie, good for 30 days.
+// How long a session is good for.  The cookie and the database row use the
+// same lifetime, so a stolen key stops working when the cookie would have
+// expired rather than lasting forever.
+exports.AUTH_MAX_AGE_MS = 30*24*60*60*1000;
+
+// The session cookie.
 exports.auth = function() {
-    return secure_options({maxAge: 30*24*60*60*1000});
+    return secure_options({maxAge: exports.AUTH_MAX_AGE_MS});
 };
 
 // Same attributes, minus the lifetime, for res.clearCookie.
@@ -41,5 +46,5 @@ exports.oauth_state = function() {
 // The CSRF cookie.  It's httpOnly like the others: the token reaches forms
 // through the template, so no page script ever needs to read it back.
 exports.csrf = function() {
-    return secure_options({maxAge: 30*24*60*60*1000});
+    return secure_options({maxAge: exports.AUTH_MAX_AGE_MS});
 };

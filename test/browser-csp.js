@@ -64,6 +64,8 @@ async function visit(browser, path, { asTA } = {}) {
         inlineHandlers: document.querySelectorAll("[onclick]").length,
         freezeLinks: document.querySelectorAll(".submit-parent-form").length,
         hiddenCsrfFields: document.querySelectorAll('input[name="_csrf"]').length,
+        logoutGetLinks: document.querySelectorAll('a[href$="/logout"]').length,
+        logoutForms: document.querySelectorAll('form[action$="/logout"]').length,
     }));
     console.log("\n  page state:", JSON.stringify(state));
     ok(state.jquery, "jQuery loaded from the CDN under CSP");
@@ -73,6 +75,8 @@ async function visit(browser, path, { asTA } = {}) {
     ok(state.csrfToken, "csrf_token available to client.js from the nonced inline block");
     ok(state.inlineHandlers === 0, "no inline onclick attributes remain");
     ok(state.hiddenCsrfFields > 0, "forms carry the hidden CSRF field");
+    ok(state.logoutGetLinks === 0, "no plain GET logout links remain");
+    ok(state.logoutForms > 0, "logout is a POST form");
     ok(problems.length === 0, "no violations on the interactive page");
 
     // Prove an injected inline script really is refused by the CSP.

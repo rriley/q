@@ -44,7 +44,9 @@ const ok = (c, m) => { console.log(`  ${c ? "PASS" : "FAIL"}  ${m}`); if (!c) fa
     // --- A TA uses the converted click handlers ---
     const ta = await browser.newPage();
     // The converted freeze link only exists in the mobile sidenav; the
-    // desktop nav uses a plain submit button that needs no JS.
+    // desktop nav uses a plain submit button that needs no JS.  Several
+    // elements share .submit-parent-form now (freeze and both logout links),
+    // so the clicks below target the freeze link inside the sidenav.
     await ta.setViewport({ width: 480, height: 900 });
     await ta.setCookie({ name: "auth", value: env.TA_KEY, domain: "127.0.0.1", path: "/" });
     await ta.goto(BASE + "/", { waitUntil: "networkidle2" });
@@ -71,7 +73,7 @@ const ok = (c, m) => { console.log(`  ${c ? "PASS" : "FAIL"}  ${m}`); if (!c) fa
     await openSidenav();
     await Promise.all([
         ta.waitForNavigation({ waitUntil: "networkidle2", timeout: 15000 }).catch(() => {}),
-        ta.click(".submit-parent-form"),
+        ta.click("#nav-mobile .freeze-btn"),
     ]);
     await new Promise((r) => setTimeout(r, 800));
     const frozenAfter = await ta.evaluate(() => document.querySelector("#frozen_message").offsetParent !== null);
@@ -81,7 +83,7 @@ const ok = (c, m) => { console.log(`  ${c ? "PASS" : "FAIL"}  ${m}`); if (!c) fa
     await openSidenav();
     await Promise.all([
         ta.waitForNavigation({ waitUntil: "networkidle2", timeout: 15000 }).catch(() => {}),
-        ta.click(".submit-parent-form"),
+        ta.click("#nav-mobile .freeze-btn"),
     ]);
     await new Promise((r) => setTimeout(r, 800));
     ok(!(await ta.evaluate(() => document.querySelector("#frozen_message").offsetParent !== null)),

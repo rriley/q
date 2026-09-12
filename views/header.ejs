@@ -22,7 +22,10 @@
       <a class="waves-effect" href="<%= path %>/metrics">Metrics</a>
       <a class="waves-effect" href="<%= path %>/history">History</a>
       <% } %>
-      <a class="waves-effect" href="<%= path %>/logout">Log Out</a></li>
+      <form method="POST" action="<%= path %>/logout" style="display: inline">
+        <input type="hidden" name="_csrf" value="<%= csrf_token %>">
+        <a href="#" class="waves-effect submit-parent-form">Log Out</a>
+      </form></li>
       <% } else { %>
       <li><a class="waves-effect" href="<%= path %>/login">Log In</a></li>
       <% } %>
@@ -48,7 +51,10 @@
       <li><a href="<%= path %>/metrics">Metrics</a></li>
       <li><a href="<%= path %>/history">History</a></li>
       <% } %>
-      <li><a href="<%= path %>/logout">Log Out</a></li>
+      <li><form method="POST" action="<%= path %>/logout">
+        <input type="hidden" name="_csrf" value="<%= csrf_token %>">
+        <a href="#" class="submit-parent-form">Log Out</a>
+      </form></li>
       <% } else { %>
       <li><a class="waves-effect" href="<%= path %>/login">Log In</a></li>
       <% } %>

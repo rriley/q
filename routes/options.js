@@ -9,7 +9,18 @@ var p = require("../permissions.js");
 var home = require("./home.js");
 var config = require("../config.json");
 
-var allowed_tags = "<a><b><blockquote><code><del><dd><dl><dt><em><h1><h2><h3><h4><h5><h6><i><img><kbd><li><ol><p><pre><s><sup><sub><strong><strike><small><ul><br><hr>";
+// sanitize-html expects an array.  This used to be a single string of
+// "<a><b>..." tags, which happened to mostly work because the library
+// tests membership with indexOf -- so any tag name that was a substring
+// of it got through (<tr> passed, because "strong" contains "tr").
+// Attribute and URL-scheme filtering came from the library defaults
+// either way, which is why nothing dangerous slipped through.
+var allowed_tags = [
+    "a", "b", "blockquote", "code", "del", "dd", "dl", "dt", "em", "h1",
+    "h2", "h3", "h4", "h5", "h6", "i", "img", "kbd", "li", "ol", "p",
+    "pre", "s", "sup", "sub", "strong", "strike", "small", "ul", "br",
+    "hr"
+];
 
 var options_cache = {};
 var protected_keys = ["current_semester", "slack_webhook", "ask_question_guide_link", "cooldown_time", "notif_time_threshold", "notif_time_interval"];

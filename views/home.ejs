@@ -157,7 +157,7 @@ var ta_id = null;
 var ta_helping_id = null;
 <%_ } _%>
 var is_owner = <%- (session && session.owner) ? "true" : "false" -%>;
-var waittimes = <%- JSON.stringify(waittimes); -%>;
+var waittimes = <%- json_for_script(waittimes); -%>;
 
 $(document).ready(function() {
   <%_ if (toast) { _%>
@@ -171,7 +171,7 @@ $(document).ready(function() {
 <%_ entries.forEach(function(entry) { _%>
   <%_ if (session && (entry.session_id == session.id || session.authenticated && entry.user_id == session.user_id)) { _%>
     <%_ sawSelf = true; _%>
-    $("#queue").append(buildMyEntry(<%- JSON.stringify({
+    $("#queue").append(buildMyEntry(<%- json_for_script({
         id: entry.id,
         status: entry.status,
         name: entry.name,
@@ -180,7 +180,7 @@ $(document).ready(function() {
         ta_full_name: entry.TA ? entry.TA.full_name : "",
         question: entry.question,
         update_requested: entry.update_requested
-    }).replace(/<\//g, "<\\/"); %>));
+    }); %>));
     <%_ if (entry.status == 1) { %>
       $("#modal_ta_name").text("<%= entry.TA.full_name %>");
       <% if (entry.TA.video_chat_url && entry.TA.video_chat_url.length > 0) { %>
@@ -195,7 +195,7 @@ $(document).ready(function() {
         M.Modal.getInstance($("#update_question_modal")).open();
     <%_ } %>
   <%_ } else if (session && (session.TA || session.owner)) { _%>
-    $("#queue").append(buildTAEntry(<%- JSON.stringify({
+    $("#queue").append(buildTAEntry(<%- json_for_script({
         id: entry.id,
         status: entry.status,
         name: entry.name,
@@ -206,9 +206,9 @@ $(document).ready(function() {
         question: entry.question,
         cooldown_override: entry.cooldown_override,
         update_requested: entry.update_requested
-  }).replace(/<\//g, "<\\/"); %>));
+  }); %>));
   <%_ } else { _%>
-    $("#queue").append(buildStudentEntry(<%- JSON.stringify({
+    $("#queue").append(buildStudentEntry(<%- json_for_script({
         id: entry.id,
         status: entry.status,
         ta_full_name: entry.TA ? entry.TA.full_name : ""

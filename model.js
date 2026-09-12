@@ -8,7 +8,17 @@ var sequelize = new Sequelize(
     host: process.env.MYSQL_HOST || config.mysql_host || 'localhost',
     logging: false,
     underscored: true,
-    timezone: config.timezone
+    // Sequelize resolves this with moment-timezone, so an IANA zone name is
+    // what it wants when stringifying dates.
+    timezone: config.timezone,
+    dialectOptions: {
+        // mysql2, however, only accepts an offset ("+05:00"), "Z" or "local",
+        // and was warning that it would eventually throw on the zone name
+        // above.  It has been silently falling back to its "local" default all
+        // along, and the process runs with TZ set to config.timezone, so saying
+        // "local" explicitly keeps today's behaviour and removes the warning.
+        timezone: 'local'
+    }
 });
 
 exports.sql = sequelize;

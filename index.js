@@ -11,6 +11,9 @@ var realtime = require("./realtime.js");
 var notiftime = require("./notiftime.js");
 var waittimes = require("./waittimes.js");
 var csrf = require("./csrf.js");
+var util = require("./util.js");
+var cookies = require("./cookies.js");
+var sessions = require("./sessions.js");
 var security = require("./security.js");
 
 var login = require("./routes/login.js");
@@ -26,6 +29,8 @@ var app = express();
 var server = http.Server(app);
 realtime.init(server);
 app.set('view engine', 'ejs')
+// Available as a plain function inside every template.
+app.locals.json_for_script = util.json_for_script;
 // Security headers first, so they're set even on responses that
 // short-circuit later (static files, redirects, errors).
 app.use(security.nonce);
@@ -47,6 +52,12 @@ app.use(function(req, res, next) {
         where: {session_key: req.cookies.auth},
         include: [{model: model.TA, as: "TA"}]
     }).then(function(user) {
+        if (user && sessions.is_expired(user)) {
+            // Past its lifetime: drop the cookie and carry on unauthenticated.
+            res.clearCookie("auth", cookies.auth_clear());
+            next();
+            return;
+        }
         req.session = user;
         next();
     }).catch(next);
@@ -58,6 +69,7 @@ app.post(config.path+"/", home.post);
 app.get(config.path+"/login", login.get_login);
 app.get(config.path+"/oauth2/callback", login.get_callback);
 app.get(config.path+"/logout", login.get_logout);
+app.post(config.path+"/logout", login.post_logout);
 
 app.get(config.path+"/options", options.get);
 app.post(config.path+"/options", options.post);
@@ -93,6 +105,7 @@ process.on("unhandledRejection", function(reason) {
 
 // Sync the schema once at startup instead of on every single request.
 model.sql.sync().then(function() {
+    sessions.init();
     notiftime.init();
     waittimes.init();
     server.listen(config.server_port);

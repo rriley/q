@@ -114,14 +114,15 @@ npm test -- xss csp
 | `oauth-domain` | The domain/verified-email decision table |
 | `oauth-roundtrip` | The token exchange against a stand-in for Google |
 | `date-roundtrip` | Dates survive Sequelize/mysql2 without a timezone shift |
-| `http-flows` | CSRF, the open redirect, URL validation, authorization |
+| `session-expiry` | Sessions stop authenticating past their lifetime, and get swept |
+| `http-flows` | CSRF, the open redirect, URL validation, authorization, logout, SRI |
 | `socket-rooms` | TAs and students receive different payloads |
 | `help-scope` | Only the student being helped gets the TA's meeting URL |
 | `browser-csp` | Real Chrome: no CSP violations, injected scripts refused |
 | `browser-ui` | Real Chrome: signup and the converted click handlers work |
 
 The jQuery devDependency is pinned to the exact version `views/head.ejs` loads
-from the CDN, so `xss-render` exercises the escaping against what actually runs
+from the CDN (currently 3.7.1), so `xss-render` exercises the escaping against what actually runs
 in production. If you change one, change the other.
 
 ## Add your information

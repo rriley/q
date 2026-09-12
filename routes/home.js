@@ -302,7 +302,11 @@ function post_help(req, res) {
         }).then(function() {
             var num_today = req.session.TA.num_today;
             var time_today = req.session.TA.time_today;
-            if (new Date() - req.session.TA.updated_at > 1000*60*60*12) {
+            // updatedAt, not updated_at: `underscored` changes the column
+            // name, not the attribute, so the snake_case form read as
+            // undefined and this comparison was always NaN > x == false --
+            // meaning the daily counters never actually reset.
+            if (new Date() - req.session.TA.updatedAt > 1000*60*60*12) {
                 num_today = 0;
                 time_today = 0;
             }

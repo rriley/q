@@ -116,6 +116,7 @@ xss-render|node $REPO/test/xss-render.js|
 oauth-domain|node $REPO/test/oauth-domain.js|
 oauth-roundtrip|node $REPO/test/oauth-roundtrip.js|
 date-roundtrip|node $REPO/test/date-roundtrip.js|
+session-expiry|node $REPO/test/session-expiry.js|
 http-flows|bash $REPO/test/http-flows.sh|
 socket-rooms|node $REPO/test/socket-rooms.js|
 help-scope|node $REPO/test/help-scope.js|

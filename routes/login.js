@@ -123,7 +123,14 @@ exports.get_callback = function(req, res) {
     }).catch(fail);
 };
 
+// Logging out is a state change, so it needs a POST with a CSRF token --
+// otherwise any page could sign a user out with an <img src=".../logout">.
+// The GET is kept so an old bookmark still lands somewhere sensible.
 exports.get_logout = function(req, res) {
+    res.redirect(config.path + "/");
+};
+
+exports.post_logout = function(req, res) {
     var destroyed = req.session ? req.session.destroy() : Promise.resolve();
     destroyed.catch(function(error) {
         console.log("ERROR: could not destroy session: " + error.message);
