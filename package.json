@@ -7,6 +7,9 @@
   "engines": {
     "node": ">=22.12.0"
   },
+  "scripts": {
+    "test": "./test/run.sh"
+  },
   "dependencies": {
     "cookie-parser": "^1.4.7",
     "ejs": "^3.1.10",
@@ -21,5 +24,11 @@
     "slack-webhook": "^1.0.0",
     "socket.io": "^4.8.3",
     "validator": "^13.15.35"
+  },
+  "devDependencies": {
+    "jquery": "3.1.1",
+    "jsdom": "^29.1.1",
+    "puppeteer-core": "^25.10.0",
+    "socket.io-client": "^4.8.3"
   }
 }

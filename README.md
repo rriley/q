@@ -83,6 +83,47 @@ You can also use [pm2](http://pm2.keymetrics.io/) to manage the server process t
    name these variables `UID`/`GID` — those are read-only shell variables in bash, so
    `UID=... docker compose up` silently fails to pass the value through.
 
+## Running the tests
+
+`test/` holds regression tests for the security fixes -- the escaping in
+`static/js/client.js`, CSRF, the OAuth domain check, the Content-Security-Policy,
+and the socket room separation. They exist because most of those are the kind of
+thing that breaks silently: a `.text()` quietly changed back to `.html()` still
+renders fine, it just becomes exploitable again.
+
+```
+npm install       # the suites need the devDependencies
+npm test
+```
+
+`test/run.sh` starts a MySQL container and a copy of the app in a temporary
+directory, seeds a semester and a TA, runs every suite, and tears it all down.
+Your own `config.json` and database are never touched. It needs `docker`; the
+two browser suites additionally need Chrome or Chromium and are skipped with a
+warning if neither is found (set `CHROME_PATH` if yours is somewhere unusual).
+
+Run a subset by name:
+
+```
+npm test -- xss csp
+```
+
+| suite | what it covers |
+| --- | --- |
+| `xss-render` | Feeds XSS payloads through the real entry builders in a DOM |
+| `oauth-domain` | The domain/verified-email decision table |
+| `oauth-roundtrip` | The token exchange against a stand-in for Google |
+| `date-roundtrip` | Dates survive Sequelize/mysql2 without a timezone shift |
+| `http-flows` | CSRF, the open redirect, URL validation, authorization |
+| `socket-rooms` | TAs and students receive different payloads |
+| `help-scope` | Only the student being helped gets the TA's meeting URL |
+| `browser-csp` | Real Chrome: no CSP violations, injected scripts refused |
+| `browser-ui` | Real Chrome: signup and the converted click handlers work |
+
+The jQuery devDependency is pinned to the exact version `views/head.ejs` loads
+from the CDN, so `xss-render` exercises the escaping against what actually runs
+in production. If you change one, change the other.
+
 ## Add your information
 
 In a web browser, go to the domain you specified in the configuration. If everything was set up correctly, you should see a splash page that says the installation was successful.
