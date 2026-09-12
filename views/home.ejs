@@ -18,6 +18,7 @@
   </div>
   <%_ if (session && (session.TA || session.owner)) { _%>
   <form id="message_form" method='POST' action="<%= path %>/options" class='center input-field'>
+    <input type="hidden" name="_csrf" value="<%= csrf_token %>">
     <div class="container">
       <textarea id="message" placeholder="Most basic HTML tags are supported" name="message" class="materialize-textarea"><%= message %></textarea>
     </div>
@@ -45,6 +46,7 @@
     <%_ } _%>
   </h6>
   <form method="POST" class="row">
+    <input type="hidden" name="_csrf" value="<%= csrf_token %>">
   <div class="input-field inline col l4 m4 s12">
     <input id="name" name="name" type="text" required
     <%_ if (session && !session.TA && !session.owner) { _%>
@@ -124,6 +126,7 @@
     </p>
     <p>If you're having trouble rewording your question, enter "Need help with question" to ask a TA for help.</p>
     <form method='POST'>
+      <input type="hidden" name="_csrf" value="<%= csrf_token %>">
       <input type='hidden' class='id-input' name='entry_id'>
         <div class="row">
           <div class="input-field col l12 m12 s12">
@@ -144,6 +147,8 @@
 <script type="text/javascript">
 
 var seq = <%= seq %>;
+// Hex token, so the escaping in <%= %> is a no-op here.
+var csrf_token = "<%= csrf_token %>";
 <%_ if (session && session.TA) { _%>
 var ta_id = <%= session.TA.id %>;
 var ta_helping_id = <%= session.TA.helping_id ? session.TA.helping_id : "null" %>;

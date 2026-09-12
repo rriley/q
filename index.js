@@ -11,6 +11,7 @@ var model = require("./model.js");
 var realtime = require("./realtime.js");
 var notiftime = require("./notiftime.js");
 var waittimes = require("./waittimes.js");
+var csrf = require("./csrf.js");
 
 var login = require("./routes/login.js");
 var home = require("./routes/home.js");
@@ -28,6 +29,9 @@ app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({"extended": false}));
 app.use(cookieParser());
 app.use(config.path, express.static('static'));
+// After the static mount (static files need no token) and after
+// bodyParser/cookieParser, which it reads from.
+app.use(csrf.middleware);
 app.use(function(req, res, next) {
     if (!req.cookies.auth) {
         next();

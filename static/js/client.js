@@ -9,6 +9,7 @@ const openUpdateQuestionModalHtml = "<button class='entry-item open-update-quest
 const entryHtml = `
     <li class='collection-item'>
         <form method='POST'>
+            <input type='hidden' class='csrf-input' name='_csrf'>
             <div class='helping-text teal-text lighten-1'></div>
             <div class='entry-container'>
                 <input type='hidden' class='id-input' name='entry_id'>
@@ -150,6 +151,7 @@ function buildTAEntry(entry) {
     var elt = $(entryHtml);
     elt.data("entryId", entry.id);
     elt.find(".id-input").val(entry.id);
+    elt.find(".csrf-input").val(csrf_token);
     elt.find(".entry-name").text(`${entry.name} (${entry.user_id})`);
     elt.find(".entry-question").text(`${entry.cooldown_override ? '\u21BB ' : ''}[${entry.topic_name}] ${entry.question}`);
 
@@ -182,6 +184,7 @@ function buildMyEntry(entry) {
     elt.addClass("me");
     elt.data("entryId", entry.id);
     elt.find(".id-input").val(entry.id);
+    elt.find(".csrf-input").val(csrf_token);
     elt.find(".entry-name").text(`${entry.name} (${entry.user_id})`);
     elt.find(".entry-question").text(`[${entry.topic_name}] ${entry.question}`);
 
@@ -202,6 +205,7 @@ function buildStudentEntry(entry) {
     var elt = $(entryHtml);
     elt.data("entryId", entry.id);
     elt.find(".id-input").val(entry.id);
+    elt.find(".csrf-input").val(csrf_token);
     if (entry.status == 1) {
         elt.find(".helping-text").text(entry.ta_full_name + " is helping");
     }

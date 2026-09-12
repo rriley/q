@@ -16,6 +16,7 @@
 <div class="card"><div class="card-content">
     <h3 class="card-title">TA Settings</h3>
     <form method="POST" class="row" style="margin-bottom: 0px;">
+      <input type="hidden" name="_csrf" value="<%= csrf_token %>">
         <div class="input-field col m10 s12">
             <input id="video_chat_url" name="video_chat_url" type="url" value="<%= video_chat_url %>"></input>
             <label for="video_chat_url">Video Chat URL to show students when you begin helping them</label>
@@ -49,6 +50,7 @@
     <div class="card"><div class="card-content">
         <h3 class="card-title">Admin</h3>
         <form action="<%= path %>/options" method="POST" class="row" style="margin-bottom: 0px;">
+          <input type="hidden" name="_csrf" value="<%= csrf_token %>">
             <div class="input-field inline col m2 s4">
             <input type="text" name="current_semester" id="current_semester" value="<%= current_semester %>" placeholder="e.g. F17" required><label for="current_semester">Current Semester</label>
             </div>
@@ -58,6 +60,7 @@
         </form>
         <p>If you have a Slack team set up for your course, you can set up a Slack Incoming Webhook <a href="https://my.slack.com/services/new/incoming-webhook/" target="_blank">here</a>. Otherwise, you may leave this field empty.</p>
         <form action="<%= path %>/options" method="POST" class="row" style="margin-bottom: 0px;">
+          <input type="hidden" name="_csrf" value="<%= csrf_token %>">
             <div class="input-field inline col m10 s12">
             <input type="url" name="slack_webhook" id="slack_webhook" value="<%= slack_webhook %>"><label for="slack_webhook">Slack Webhook URL</label>
             </div>
@@ -67,6 +70,7 @@
         </form>
         <p>This link will be displayed to students when asked to fix their question. If not needed, you may leave this field empty.</p>
         <form action="<%= path %>/options" method="POST" class="row" style="margin-bottom: 0px;">
+          <input type="hidden" name="_csrf" value="<%= csrf_token %>">
             <div class="input-field inline col m10 s12">
             <input type="url" name="ask_question_guide_link" id="ask_question_guide_link" value="<%= ask_question_guide_link %>"><label for="ask_question_guide_link"><em>Asking Questions</em> Guide URL</label>
             </div>
@@ -76,6 +80,7 @@
         </form>
         <div class="row">
             <form action="<%= path %>/options" method="POST" class="row" style="margin-bottom: 0px;">
+              <input type="hidden" name="_csrf" value="<%= csrf_token %>">
                 Cooldown Warning Time Limit, in minutes (Use 0 to disable):
                 <div class="input-field inline">
                     <input type="number" name="cooldown_time" id="cooldown_time" value="<%= cooldown_time %>" min=0 required><label for="current_semester"></label>
@@ -85,6 +90,7 @@
                 </div>
             </form>
             <form action="<%= path %>/options" method="POST" class="row" style="margin-bottom: 0px;">
+              <input type="hidden" name="_csrf" value="<%= csrf_token %>">
                 TA Help Notification Time Threshold, in minutes (Use 0 to disable):
                 <div class="input-field inline">
                     <input type="number" name="notif_time_threshold" id="notif_time_threshold" value="<%= notif_time_threshold %>" min=0 required><label for="current_semester"></label>
@@ -94,6 +100,7 @@
                 </div>
             </form>
             <form action="<%= path %>/options" method="POST" class="row" style="margin-bottom: 0px;">
+              <input type="hidden" name="_csrf" value="<%= csrf_token %>">
                 TA Help Notification Repeating Time Interval, in minutes (Use 0 to disable):
                 <div class="input-field inline">
                     <input type="number" name="notif_time_interval" id="notif_time_interval" value="<%= notif_time_interval %>" min=0 required><label for="current_semester"></label>
@@ -118,6 +125,7 @@
         </div><div class="fake-tbody">
         <% topics.forEach(function(topic) { %>
         <form class="fake-tr" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrf_token %>">
         <div class="fake-td"><input type="text" name="topic_name" value="<%= topic.name %>" required></div>
         <div class="fake-td"><input type="text" name="out_date" class="datepicker" value="<%= topic.out_date %>" required></div>
         <div class="fake-td"><input type="text" name="due_date" class="datepicker" value="<%= topic.due_date %>" required></div>
@@ -132,6 +140,7 @@
         <p><strong>Add a new topic:</strong></p>
         <div class="fake-tbody">
         <form class="fake-tr" method="POST" style="background: none;">
+          <input type="hidden" name="_csrf" value="<%= csrf_token %>">
         <div class="fake-td"><label for="topic_name">Name</label><input type="text" name="topic_name" required></div>
         <div class="fake-td"><label for="out_date">Out Date/Time</label><input type="text" name="out_date" class="datepicker" required></div>
         <div class="fake-td"><label for="due_date">Due Date/Time</label><input type="text" name="due_date" class="datepicker" required></div>
@@ -155,6 +164,7 @@
         </div><div class="fake-tbody">
         <% tas.forEach(function(ta) { %>
         <form class="fake-tr" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrf_token %>">
         <div class="fake-td"><input type="text" name="name" value="<%= ta.full_name %>"></div>
         <div class="fake-td">
             <input type="email" name="email" value="<%= ta.email %>" required <% if (ta.is_self) { %> disabled <% } %>>
@@ -175,6 +185,7 @@
         <p><strong>Add a new TA:</strong></p>
         <div class="fake-tbody">
         <form class="fake-tr" method="POST" style="background: none;">
+          <input type="hidden" name="_csrf" value="<%= csrf_token %>">
         <div class="fake-td"><label for="name">Name</label><input type="text" name="name" required></div>
         <div class="fake-td"><label for="email">Email</label><input type="email" name="email" required></div>
         <div class="fake-td">

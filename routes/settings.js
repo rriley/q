@@ -279,9 +279,27 @@ function post_update_ta(req, res) {
     });
 }
 
+// Only http(s) is allowed: this value is assigned straight to an href that
+// students click, so a "javascript:" URL would run in their browser.  Parsing
+// it ourselves rather than using validator.isURL avoids depending on a
+// function that currently has an open bypass advisory.
+function is_http_url(value) {
+    try {
+        var parsed = new URL(value);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch (e) {
+        return false;
+    }
+}
+
 function post_update_url(req, res) {
+    var video_chat_url = String(req.body.video_chat_url == null ? "" : req.body.video_chat_url).trim();
+    if (video_chat_url && !is_http_url(video_chat_url)) {
+        respond(req, res, "Error: The video chat URL must be a http:// or https:// address.");
+        return;
+    }
     req.session.TA.update({
-        video_chat_url: req.body.video_chat_url
+        video_chat_url: video_chat_url
     }).then(function(result) {
         home.clear_entries_cache();
         respond(req, res, "Video Chat URL updated");

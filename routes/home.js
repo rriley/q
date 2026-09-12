@@ -271,6 +271,7 @@ function post_rem(req, res) {
 
 function post_help(req, res) {
     var id = req.body.entry_id;
+    var helped_entry = null;
     model.sql.transaction(function(t) {
         if (!p.is_ta(req)) {
             throw new Error("You don't have permission to help that student");
@@ -288,6 +289,9 @@ function post_help(req, res) {
             if (entry.status != 0) {
                 throw new Error("That student is already being helped");
             }
+            // Kept so realtime.help can tell which connected client is the
+            // student being helped.
+            helped_entry = entry;
             return entry.update({
                 status: 1,
                 help_time: new Date(),
@@ -309,7 +313,7 @@ function post_help(req, res) {
         })
     }).then(function(result) {
         entries_cache = null;
-        realtime.help(id, req.session.TA);
+        realtime.help(id, req.session.TA, helped_entry);
         return waittimes.update();
     }).then(function(waittimes) {
         respond(req, res, null);

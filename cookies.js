@@ -37,3 +37,9 @@ exports.auth_clear = function() {
 exports.oauth_state = function() {
     return secure_options({maxAge: 10*60*1000});
 };
+
+// The CSRF cookie.  It's httpOnly like the others: the token reaches forms
+// through the template, so no page script ever needs to read it back.
+exports.csrf = function() {
+    return secure_options({maxAge: 30*24*60*60*1000});
+};

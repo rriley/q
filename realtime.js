@@ -103,13 +103,47 @@ exports.remove = function(entry_id) {
     });
 };
 
-exports.help = function(entry_id, ta) {
+// All connected sockets, across socket.io 2.x (plain object) and 3.x+ (Map).
+function all_sockets() {
+    var sockets = sio.sockets.sockets;
+    if (sockets && typeof sockets.forEach === "function" && typeof sockets.get === "function") {
+        return Array.from(sockets.values());
+    }
+    return Object.keys(sockets).map(function(id) { return sockets[id]; });
+}
+
+// Whether this socket belongs to the student the entry is for.  Mirrors the
+// condition home.ejs uses to decide an entry is "mine", so exactly the
+// clients that will open the help modal are the ones told the meeting URL.
+function is_entry_owner(socket, entry) {
+    if (!entry || !socket.session) {
+        return false;
+    }
+    if (entry.session_id != null && socket.session.id == entry.session_id) {
+        return true;
+    }
+    return !!(socket.session.authenticated && entry.user_id
+              && socket.session.user_id == entry.user_id);
+}
+
+exports.help = function(entry_id, ta, entry) {
     exports.seq = exports.seq + 1;
     if (!sio) {
         console.log("ERROR: Socket.io is not initialized yet");
         return;
     }
-    sio.emit("help", {
+    // Everyone needs to know the entry is being helped and by whom, but the
+    // TA's personal meeting URL goes only to the student they're helping --
+    // it used to be broadcast to every connected client.
+    var payload = {
+        seq: exports.seq,
+        id: entry_id,
+        data: {
+            ta_id: ta.id,
+            ta_full_name: ta.full_name
+        }
+    };
+    var with_url = {
         seq: exports.seq,
         id: entry_id,
         data: {
@@ -117,6 +151,9 @@ exports.help = function(entry_id, ta) {
             ta_full_name: ta.full_name,
             ta_video_chat_url: ta.video_chat_url
         }
+    };
+    all_sockets().forEach(function(socket) {
+        socket.emit("help", is_entry_owner(socket, entry) ? with_url : payload);
     });
 };
 

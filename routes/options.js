@@ -107,6 +107,24 @@ exports.get = function(req, res) {
     });
 };
 
+// Returns the referer as a path we can safely redirect to, or null.  Only
+// same-host referers are honoured, and only ever as a relative path, so a
+// crafted Referer header can't turn this into an open redirect.
+function local_referer(req) {
+    if (!req.headers.referer || !req.headers.host) {
+        return null;
+    }
+    try {
+        var target = new URL(req.headers.referer, "http://" + req.headers.host);
+        if (target.host !== req.headers.host) {
+            return null;
+        }
+        return target.pathname + target.search;
+    } catch (e) {
+        return null;
+    }
+}
+
 function respond(req, res, message, data) {
     if (req.query.json) {
         res.json({message: message, data: data});
@@ -114,11 +132,7 @@ function respond(req, res, message, data) {
         if (message) {
             res.cookie("toast", message, {path: config.path});
         }
-        if (req.headers.referer) {
-            res.redirect(req.headers.referer);
-        } else {
-            res.redirect(config.path + "/");
-        }
+        res.redirect(local_referer(req) || config.path + "/");
     }
 }
 
@@ -235,8 +249,13 @@ exports.post = function(req, res) {
         respond(req, res, "You don't have permission to do that.");
         return;
     }
+    // Everything in the body is treated as an option to set, so the CSRF
+    // field has to be filtered out before we get here.
+    var keys = Object.keys(req.body).filter(function(key) {
+        return key !== "_csrf";
+    });
     var is_protected = false;
-    Object.keys(req.body).forEach(function(key) {
+    keys.forEach(function(key) {
         if (protected_keys.indexOf(key) >= 0) {
             is_protected = true;
         }
@@ -247,7 +266,7 @@ exports.post = function(req, res) {
     }
     var promises = [];
 
-    Object.keys(req.body).forEach(function(key) {
+    keys.forEach(function(key) {
         var value = validate(key, req.body[key]);
         if (value === undefined) {
             promises.push(Promise.resolve("Value for property '" + key + "' was not valid"));
