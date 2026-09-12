@@ -117,6 +117,7 @@ npm test -- xss csp
 | `session-expiry` | Sessions stop authenticating past their lifetime, and get swept |
 | `http-flows` | CSRF, the open redirect, URL validation, authorization, logout, SRI |
 | `socket-rooms` | TAs and students receive different payloads |
+| `ta-roster` | TA access follows the roster, not the ta_id stored at login |
 | `help-scope` | Only the student being helped gets the TA's meeting URL |
 | `browser-csp` | Real Chrome: no CSP violations, injected scripts refused |
 | `browser-ui` | Real Chrome: signup and the converted click handlers work |

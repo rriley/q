@@ -60,6 +60,8 @@ exports.get_callback = function(req, res) {
     var key = crypto.randomBytes(72).toString('base64');
     var expected_state = req.cookies.oauth_state;
     var email;
+    // Kept so a roster row created for the owner can carry a real name.
+    var display_name;
 
     res.clearCookie("oauth_state", cookies.auth_clear());
 
@@ -100,6 +102,7 @@ exports.get_callback = function(req, res) {
             throw new PublicError("Please sign in with your " + allowed_domain + " account.");
         }
         email = profile.email;
+        display_name = profile.name || null;
         return Promise.all([options.current_semester(), model.sql.sync()]);
     }).then(function(results) {
         return model.TA.findOne({
@@ -110,6 +113,7 @@ exports.get_callback = function(req, res) {
         });
     }).then(function(ta) {
         return model.Session.create({
+            "name": display_name,
             "email": email,
             "user_id": email.substring(0, email.indexOf("@")),
             "session_key": key,

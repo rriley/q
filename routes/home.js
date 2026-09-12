@@ -135,11 +135,15 @@ function post_add(req, res) {
     var topic = null;
     new Promise(function(resolve, reject) {
         // A valid user ID is between 3 and 8 alphanumeric characters, and
-        // if the user is logged in (and isn't a TA), then it must match
-        // the account they're logged in with.
+        // if the user is logged in as an ordinary student, then it must match
+        // the account they're logged in with.  Admins are allowed to enter
+        // somebody else the same way TAs are -- the owner is an admin without
+        // necessarily being on the TA roster, and the page offers them the
+        // "Add a student to the queue" form either way.
         if (!user_id || user_id.length < 3 || user_id.length > 8
                 || !RegExp("^[A-Za-z0-9]*$").test(user_id)
-                || (p.is_logged_in(req) && !p.is_ta(req) && req.session.user_id != user_id)) {
+                || (p.is_logged_in(req) && !p.is_ta(req) && !p.is_admin(req)
+                    && req.session.user_id != user_id)) {
             throw new Error("Invalid Andrew ID");
         }
         // A valid name is any non-empty string that fits in the column.
@@ -162,7 +166,7 @@ function post_add(req, res) {
     }).then(function(result) {
         if (result.entry && result.entry.status < 2) {
             throw new Error("You are already on the queue");
-        } else if (!p.is_ta(req) && result.entry && new Date() - result.entry.exit_time < 1000 * 60 * result.cooldown_time && !cooldown_override) {
+        } else if (!p.is_ta(req) && !p.is_admin(req) && result.entry && new Date() - result.entry.exit_time < 1000 * 60 * result.cooldown_time && !cooldown_override) {
             var err = new Error("You've just been helped");
             err.data = {
                 cooldown_warning: true,
@@ -186,8 +190,11 @@ function post_add(req, res) {
             throw new Error("The queue is not accepting signups right now");
         }
         // Create an unauthenticated session if the user isn't logged in or
-        // if their existing session's user ID doesn't match the current one
-        if (!req.session || (!p.is_ta(req) && req.session.user_id != user_id)) {
+        // if their existing session's user ID doesn't match the current one.
+        // Admins are excluded along with TAs: entering another student must
+        // not swap the auth cookie out from under them and sign them out.
+        if (!req.session || (!p.is_ta(req) && !p.is_admin(req)
+                             && req.session.user_id != user_id)) {
             var key = crypto.randomBytes(72).toString('base64');
             return model.Session.create({
                 name: name,

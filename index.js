@@ -49,17 +49,25 @@ app.use(function(req, res, next) {
         return;
     }
     model.Session.findOne({
-        where: {session_key: req.cookies.auth},
-        include: [{model: model.TA, as: "TA"}]
+        where: {session_key: req.cookies.auth}
     }).then(function(user) {
-        if (user && sessions.is_expired(user)) {
+        if (!user) {
+            next();
+            return;
+        }
+        if (sessions.is_expired(user)) {
             // Past its lifetime: drop the cookie and carry on unauthenticated.
             res.clearCookie("auth", cookies.auth_clear());
             next();
             return;
         }
         req.session = user;
-        next();
+        // Deliberately not an include on the query above: the TA record is
+        // looked up by email against the current semester's roster, not
+        // through the session's stored ta_id.  See sessions.attach_ta.
+        return sessions.attach_ta(user).then(function() {
+            next();
+        });
     }).catch(next);
 });
 

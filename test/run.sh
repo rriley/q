@@ -119,6 +119,7 @@ date-roundtrip|node $REPO/test/date-roundtrip.js|
 session-expiry|node $REPO/test/session-expiry.js|
 http-flows|bash $REPO/test/http-flows.sh|
 socket-rooms|node $REPO/test/socket-rooms.js|
+ta-roster|node $REPO/test/ta-roster.js|
 help-scope|node $REPO/test/help-scope.js|
 browser-csp|node $REPO/test/browser-csp.js|chrome
 browser-ui|node $REPO/test/browser-ui.js|chrome

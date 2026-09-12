@@ -1,6 +1,7 @@
 var crypto = require("crypto");
 var model = require("./model.js");
 var config = require("./config.json");
+var sessions = require("./sessions.js");
 
 var sio;
 var ta_room = crypto.randomBytes(72).toString('base64');
@@ -46,16 +47,24 @@ exports.init = function(app) {
             return;
         }
         model.Session.findOne({
-            where: {session_key: String(auth)},
-            include: [{model: model.TA, as: "TA"}]
+            where: {session_key: String(auth)}
         }).then(function(user) {
-            if (user) {
+            if (!user || sessions.is_expired(user)) {
+                return;
+            }
+            // Resolved against the current roster rather than the session's
+            // stored ta_id, exactly as the HTTP middleware does.  These two
+            // have to agree: the page decides which entry builder to use from
+            // what the render saw, so a TA the render trusts but this handler
+            // does not would be sent the student payload and would fail to
+            // draw live entries at all.
+            return sessions.attach_ta(user).then(function() {
                 socket.session = user;
                 if (user.TA || user.owner) {
                     socket.leave(student_room);
                     socket.join(ta_room);
                 }
-            }
+            });
         }).catch(function(err) {
             console.error("ERROR: socket authentication failed:", err.message);
         });
