@@ -1,0 +1,35 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: queue
+      MYSQL_USER: queue
+      MYSQL_PASSWORD: queue
+      MYSQL_ROOT_PASSWORD: queue-root
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pqueue-root"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: queue
+      MYSQL_USER: queue
+      MYSQL_PASSWORD: queue
+    ports:
+      - "${APP_PORT:-15122}:${APP_PORT:-15122}"
+    volumes:
+      - ./config.json:/app/config.json:ro
+
+volumes:
+  db_data:

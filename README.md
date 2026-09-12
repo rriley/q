@@ -17,15 +17,19 @@ If you have a Slack team set up for your course, you can set up a Slack Incoming
 
 1. Install [Node.js](https://nodejs.org)
 2. Clone this repository
-3. In the root directory, create the file `config.json` with the following structure:
+3. In the root directory, create the file `config.json` with the following structure
+   (if you're running with Docker Compose instead, skip the `mysql_host`/`mysql_db`/
+   `mysql_user`/`mysql_pass` fields — see below):
    ```
    {
        "title": "15-122 Office Hours Queue",
        "protocol": "http",
        "domain": "q.15122.tk",
+       "path": "",
        "timezone": "America/New_York",
        "server_port": 80,
 
+       "mysql_host": "localhost",
        "mysql_db": "<Your MySQL database>",
        "mysql_user": "<MySQL user that has access to the database>",
        "mysql_pass": "<Password for the MySQL user>",
@@ -49,6 +53,19 @@ This part is up to you. If port 80 is already being used (for another web server
 node index.js
 ```
 You can also use [pm2](http://pm2.keymetrics.io/) to manage the server process to ensure that it's always running.
+
+## Run with Docker Compose
+
+1. Create `config.json` as described above, but omit `mysql_host`, `mysql_db`, `mysql_user`
+   and `mysql_pass` — Docker Compose supplies fixed database credentials to the app
+   container automatically (the database isn't reachable from outside the containers, so
+   there's nothing to keep secret there). Keep `"server_port"` set to whatever port you
+   want to expose (defaults to `15122` if you don't set the `APP_PORT` environment variable).
+2. Run:
+   ```
+   docker compose up --build
+   ```
+   This starts a MySQL container and the app container, which connects to it automatically. The database persists in a Docker volume across restarts.
 
 ## Add your information
 

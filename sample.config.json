@@ -2,9 +2,11 @@
     "title": "15-122 Office Hours Queue",
     "protocol": "https",
     "domain": "q.15122.tk",
+    "path": "",
     "timezone": "America/New_York",
     "server_port": 15122,
 
+    "mysql_host": "localhost",
     "mysql_db": "queue",
     "mysql_user": "queue",
     "mysql_pass": "<Password for the MySQL user>",
