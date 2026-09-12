@@ -2,13 +2,14 @@ services:
   db:
     image: mysql:8.0
     restart: unless-stopped
+    user: "${HOST_UID}:${HOST_GID}"
     environment:
       MYSQL_DATABASE: queue
       MYSQL_USER: queue
       MYSQL_PASSWORD: queue
       MYSQL_ROOT_PASSWORD: queue-root
     volumes:
-      - db_data:/var/lib/mysql
+      - ./data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pqueue-root"]
       interval: 5s
@@ -30,6 +31,3 @@ services:
       - "${APP_PORT:-15122}:${APP_PORT:-15122}"
     volumes:
       - ./config.json:/app/config.json:ro
-
-volumes:
-  db_data:

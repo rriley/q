@@ -63,9 +63,14 @@ You can also use [pm2](http://pm2.keymetrics.io/) to manage the server process t
    want to expose (defaults to `15122` if you don't set the `APP_PORT` environment variable).
 2. Run:
    ```
-   docker compose up --build
+   HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose up --build
    ```
-   This starts a MySQL container and the app container, which connects to it automatically. The database persists in a Docker volume across restarts.
+   This starts a MySQL container and the app container, which connects to it automatically.
+   The database persists in `./data`, owned by the user who ran the command above (passing
+   `HOST_UID`/`HOST_GID` makes the MySQL container run as that user instead of the image's
+   default, so the files aren't left owned by a container-internal user id). Note: don't
+   name these variables `UID`/`GID` — those are read-only shell variables in bash, so
+   `UID=... docker compose up` silently fails to pass the value through.
 
 ## Add your information
 
