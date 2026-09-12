@@ -72,6 +72,11 @@ exports.get = function(req, res) {
             is_ta: p.is_ta(req),
             path: config.path
         });
+    }).catch(function(error) {
+        console.log("ERROR: could not render settings: " + error.message);
+        if (!res.headersSent) {
+            res.sendStatus(500);
+        }
     });
 };
 
@@ -104,6 +109,8 @@ function post_add_topic(req, res) {
     }).then(function() {
         home.clear_topics_cache();
         respond(req, res, "Topic added");
+    }).catch(function(error) {
+        respond(req, res, "Error: " + error.message);
     });
 }
 
@@ -194,6 +201,8 @@ function post_add_ta(req, res) {
         } else {
             respond(req, res, "Error: TA already exists.")
         }
+    }).catch(function(error) {
+        respond(req, res, "Error: " + error.message);
     });
 }
 
@@ -276,6 +285,8 @@ function post_update_url(req, res) {
     }).then(function(result) {
         home.clear_entries_cache();
         respond(req, res, "Video Chat URL updated");
+    }).catch(function(error) {
+        respond(req, res, "Error: " + error.message);
     });
 }
 

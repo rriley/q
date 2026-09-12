@@ -9,5 +9,7 @@
     "google_id": "<Google Client ID from https://console.developers.google.com>",
     "google_secret": "<Google Client Secret from https://console.developers.google.com>",
 
+    "allowed_domain": "andrew.cmu.edu",
+
     "owner_email": "<Google/Andrew account email address for this site's Owner (super-user)>"
 }

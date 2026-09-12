@@ -37,9 +37,18 @@ If you have a Slack team set up for your course, you can set up a Slack Incoming
        "google_id": "<Google Client ID from https://console.developers.google.com>",
        "google_secret": "<Google Client Secret from https://console.developers.google.com>",
 
+       "allowed_domain": "andrew.cmu.edu",
+
        "owner_email": "<Google/Andrew account email address for this site's Owner (super-user)>"
    }
    ```
+
+   `allowed_domain` is the Google Workspace domain that accounts must belong to.
+   Sign-ins from any other domain are rejected, which is what stops someone with
+   a personal Google account from being treated as the student who happens to
+   share their address's local part. It defaults to `andrew.cmu.edu`; set it to
+   `""` to accept any Google account. The address in `owner_email` is always
+   allowed through, so it can be a personal account.
 4. Run this command in your terminal:
 
    ```

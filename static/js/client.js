@@ -150,15 +150,15 @@ function buildTAEntry(entry) {
     var elt = $(entryHtml);
     elt.data("entryId", entry.id);
     elt.find(".id-input").val(entry.id);
-    elt.find(".entry-name").html(`${entry.name} (${entry.user_id})`);
-    elt.find(".entry-question").html(`${entry.cooldown_override ? '\u21BB ' : ''}[${entry.topic_name}] ${entry.question.replace(/</g, "&lt;")}`);
+    elt.find(".entry-name").text(`${entry.name} (${entry.user_id})`);
+    elt.find(".entry-question").text(`${entry.cooldown_override ? '\u21BB ' : ''}[${entry.topic_name}] ${entry.question}`);
 
     if (entry.status == 1 && ta_id == entry.ta_id) {
         elt.find(".cancel-button").removeClass("hide");
         elt.find(".done-button").removeClass("hide");
         elt.find(".helping-text").text("You are helping");
     } else if (entry.status == 1) {
-        elt.find(".helping-text").html(`${entry.ta_full_name} is helping ${xHtml}`);
+        elt.find(".helping-text").text(`${entry.ta_full_name} is helping `).append(xHtml);
     } else if (!ta_helping_id) {
         elt.find(".remove-button").removeClass("hide");
         if (ta_id) {
@@ -182,8 +182,8 @@ function buildMyEntry(entry) {
     elt.addClass("me");
     elt.data("entryId", entry.id);
     elt.find(".id-input").val(entry.id);
-    elt.find(".entry-name").html(`${entry.name} (${entry.user_id})`);
-    elt.find(".entry-question").html(`[${entry.topic_name}] ${entry.question.replace(/</g, "&lt;")}`);
+    elt.find(".entry-name").text(`${entry.name} (${entry.user_id})`);
+    elt.find(".entry-question").text(`[${entry.topic_name}] ${entry.question}`);
 
     if (entry.status == 1) {
         elt.find(".helping-text").text(entry.ta_full_name + " is helping");
@@ -270,21 +270,6 @@ function updateStatus() {
     $("#num_ahead").text(ahead);
 }
 
-function getCookie(cname) {
-    var name = cname + "=";
-    var ca = document.cookie.split(';');
-    for(var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return "";
-}
-
 function checkAndUpdateSeq(message_seq) {
     if (message_seq != seq + 1) {
         window.location.reload();
@@ -296,7 +281,8 @@ function checkAndUpdateSeq(message_seq) {
 var pathname = window.location.pathname;
 var socket = io.connect({path: pathname+'socket.io'});
 socket.on("connect", function () {
-    socket.emit("authenticate", unescape(getCookie("auth")));
+    // The server authenticates us from the auth cookie on the handshake
+    // itself, so there is nothing to send here.
     // notification permission request on connect
     if (!("Notification" in window)) {
         console.log("This browser does not support desktop notification");
@@ -398,10 +384,10 @@ socket.on("update-question", function(message) {
 
             // To prevent needing to pass all the fields required for entry-question (topic, cooldown)
             // We substring the old question to retrieve the "header", then append the updated question
-            const entry_question = $(item).find(".entry-question")
-            const old_question = entry_question.html().toString();
-            const question_header = old_question.substring(0, old_question.indexOf("]") + 2);
-            entry_question.html(`${question_header} ${message.updated_question.replace(/</g, "&lt;")}`);
+            const entry_question = $(item).find(".entry-question");
+            const old_question = entry_question.text();
+            const question_header = old_question.substring(0, old_question.indexOf("]") + 1);
+            entry_question.text(`${question_header} ${message.updated_question}`);
         }
     });
 });

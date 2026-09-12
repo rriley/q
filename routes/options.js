@@ -86,25 +86,25 @@ exports.notif_time_interval = function() {
 };
 
 exports.get = function(req, res) {
+    var value;
     if (req.query.key == "frozen") {
-        exports.frozen().then(function(frozen) {
-            if (frozen) {
-                res.send("1");
-            } else {
-                res.send("0");
-            }
-        });
+        value = exports.frozen().then(function(frozen) { return frozen ? "1" : "0"; });
     } else if (req.query.key == "message") {
-        exports.message().then(function(message) {
-            res.send(message);
-        });
+        value = exports.message();
     } else if (req.query.key == "current_semester") {
-        exports.current_semester().then(function(sem) {
-            res.send(sem);
-        });
+        value = exports.current_semester();
     } else {
         res.sendStatus(404);
+        return;
     }
+    value.then(function(result) {
+        // text/plain: "message" is operator-supplied HTML, and this endpoint
+        // hands back a bare value rather than a page.
+        res.type("txt").send(result);
+    }).catch(function(error) {
+        console.log("ERROR: could not read option '" + req.query.key + "': " + error.message);
+        res.sendStatus(500);
+    });
 };
 
 function respond(req, res, message, data) {
@@ -272,5 +272,8 @@ exports.post = function(req, res) {
 
     Promise.all(promises).then(function(results) {
         respond(req, res, results.filter(function(s) { return s != undefined }).join(', '));
+    }).catch(function(error) {
+        console.log("ERROR: could not update options: " + error.message);
+        respond(req, res, "Error: " + error.message);
     });
 };

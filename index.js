@@ -24,26 +24,22 @@ var manifest = require("./routes/manifest.js");
 var app = express();
 var server = http.Server(app);
 realtime.init(server);
-notiftime.init();
-waittimes.init();
 app.set('view engine', 'ejs')
 app.use(bodyParser.urlencoded({"extended": false}));
 app.use(cookieParser());
 app.use(config.path, express.static('static'));
 app.use(function(req, res, next) {
-    model.sql.sync().then(function() {
-        if (!req.cookies.auth) {
-            next();
-            return;
-        }
-        model.Session.findOne({
-            where: {session_key: req.cookies.auth},
-            include: [{model: model.TA, as: "TA"}]
-        }).then(function(user) {
-            req.session = user;
-            next();
-        });
-    });
+    if (!req.cookies.auth) {
+        next();
+        return;
+    }
+    model.Session.findOne({
+        where: {session_key: req.cookies.auth},
+        include: [{model: model.TA, as: "TA"}]
+    }).then(function(user) {
+        req.session = user;
+        next();
+    }).catch(next);
 });
 
 app.get(config.path+"/", home.get);
@@ -68,4 +64,29 @@ app.post(config.path+"/settings", settings.post);
 
 app.get(config.path+"/manifest.json", manifest.get);
 
-server.listen(config.server_port);
+// Catch-all error handler.  Without this, anything a route forwards to next()
+// renders express's default stack-trace page.
+app.use(function(err, req, res, next) {
+    console.error("ERROR: unhandled error serving " + req.method + " " + req.url + ":",
+                  (err && err.stack) || err);
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.sendStatus(500);
+});
+
+// A rejected promise that nobody handles terminates the process on modern
+// node.  Log it and keep serving rather than dropping the queue mid-session.
+process.on("unhandledRejection", function(reason) {
+    console.error("ERROR: unhandled promise rejection:", (reason && reason.stack) || reason);
+});
+
+// Sync the schema once at startup instead of on every single request.
+model.sql.sync().then(function() {
+    notiftime.init();
+    waittimes.init();
+    server.listen(config.server_port);
+}).catch(function(error) {
+    console.error("FATAL: could not sync the database schema:", (error && error.stack) || error);
+    process.exit(1);
+});

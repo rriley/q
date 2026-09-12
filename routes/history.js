@@ -138,26 +138,44 @@ exports.get = function(req, res) {
             path: config.path,
             admin: results
         });
+    }).catch(function(error) {
+        console.log("ERROR: could not render history: " + error.message);
+        if (!res.headersSent) {
+            res.sendStatus(500);
+        }
     });
 }
 
+// Not currently routed, but kept in sync with the copy in metrics.js so that
+// mounting it later doesn't reintroduce an unauthenticated endpoint.
 exports.get_counts = function(req, res) {
-    var p = req.query.period;
-    var g = req.query.granularity;
-    if (p && p != "weekday"
-        || g != "week" && g != "day" && g != "hour") {
-        res.send(400);
+    if (!p.is_logged_in(req) || (!p.is_ta(req) && !p.is_admin(req))) {
+        res.sendStatus(403);
+        return;
+    }
+    var period = req.query.period;
+    var granularity = req.query.granularity;
+    if (period && period != "weekday"
+        || granularity != "week" && granularity != "day" && granularity != "hour") {
+        res.sendStatus(400);
         return;
     }
     var from = parseDate(req.query.from, "YYYY-MM-DD");
     var to = parseDate(req.query.to, "YYYY-MM-DD");
     options.current_semester().then(function(semester) {
-        var query = count_query(req.query.period, req.query.granularity, semester, from, to);
+        var query = count_query(period, granularity, semester, from, to);
+        var replacements = [];
+        if (semester) replacements.push(semester);
+        if (from) replacements.push(from);
+        if (to) replacements.push(to);
         return model.sql.query(query, {
             type: model.sql.QueryTypes.SELECT,
-            replacements: [semester, from, to],
+            replacements: replacements,
         })
     }).then(function(results) {
         res.send(results);
+    }).catch(function(error) {
+        console.log("ERROR: counts.json failed: " + error.message);
+        res.sendStatus(500);
     });
 }

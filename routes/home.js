@@ -8,6 +8,13 @@ var realtime = require("../realtime.js");
 var waittimes = require("../waittimes.js");
 var p = require("../permissions.js");
 var options = require("./options.js");
+var cookies = require("../cookies.js");
+
+// Upper bounds for the free-text fields students control.  The columns are
+// VARCHAR(255), and the question textarea already caps itself at 255 in the
+// browser; these are the server-side equivalents.
+var MAX_NAME_LENGTH = 64;
+var MAX_QUESTION_LENGTH = 255;
 
 var entries_cache = null;
 var topics_cache = null;
@@ -96,6 +103,11 @@ exports.get = function(req, res) {
                 toast: toast
             });
         });
+    }).catch(function(error) {
+        console.log("ERROR: could not render the queue: " + error.message);
+        if (!res.headersSent) {
+            res.sendStatus(500);
+        }
     });
 };
 
@@ -111,10 +123,13 @@ function respond(req, res, message, data) {
 }
 
 function post_add(req, res) {
-    var name = req.body.name;
-    var user_id = req.body.user_id.toLowerCase();
+    // Coerce to strings up front: with body-parser's extended:false, a
+    // repeated field arrives as an array, and everything below assumes a
+    // string (.toLowerCase() on an array throws, .length lies, and so on).
+    var name = String(req.body.name == null ? "" : req.body.name).trim();
+    var user_id = String(req.body.user_id == null ? "" : req.body.user_id).toLowerCase();
     var topic_id = req.body.topic_id;
-    var question = req.body.question;
+    var question = String(req.body.question == null ? "" : req.body.question).trim();
     var cooldown_override = req.body.cooldown_override;
     var topic = null;
     new Promise(function(resolve, reject) {
@@ -126,11 +141,11 @@ function post_add(req, res) {
                 || (p.is_logged_in(req) && !p.is_ta(req) && req.session.user_id != user_id)) {
             throw new Error("Invalid Andrew ID");
         }
-        // A valid name is just any non-empty string.
-        if (!name || name.length < 1) {
+        // A valid name is any non-empty string that fits in the column.
+        if (name.length < 1 || name.length > MAX_NAME_LENGTH) {
             throw new Error("Invalid Name");
         }
-        if (question.length < 2) {
+        if (question.length < 2 || question.length > MAX_QUESTION_LENGTH) {
             throw new Error("Invalid Question");
         }
         resolve();
@@ -180,7 +195,7 @@ function post_add(req, res) {
                 authenticated: false
             }).then(function(instance) {
                 req.session = instance;
-                res.cookie("auth", key);
+                res.cookie("auth", key, cookies.auth());
             });
         } else if (req.session && !p.is_ta(req) && !p.is_admin(req)) {
             return req.session.update({
@@ -422,9 +437,14 @@ function post_request_update(req, res) {
 
 function post_update(req, res) {
     var id = req.body.entry_id;
-    var updated_question = req.body.question;
+    var updated_question = String(req.body.question == null ? "" : req.body.question).trim();
 
     model.sql.transaction(function(t) {
+        // The replacement question goes through the same checks the original
+        // did on the way in; this path had none at all.
+        if (updated_question.length < 2 || updated_question.length > MAX_QUESTION_LENGTH) {
+            throw new Error("Invalid Question");
+        }
         return model.Entry.findByPk(id, {
             transaction: t,
             lock: Sequelize.Transaction.LOCK.UPDATE,

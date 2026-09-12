@@ -8,28 +8,56 @@ var student_room = crypto.randomBytes(72).toString('base64');
 
 exports.seq = 0;
 
+// Minimal Cookie header parser.  We can't use req.cookies here because a
+// socket handshake doesn't go through the express middleware stack.
+function parse_cookies(header) {
+    var out = {};
+    if (!header) {
+        return out;
+    }
+    header.split(";").forEach(function(pair) {
+        var eq = pair.indexOf("=");
+        if (eq < 0) {
+            return;
+        }
+        var name = pair.slice(0, eq).trim();
+        var value = pair.slice(eq + 1).trim();
+        try {
+            out[name] = decodeURIComponent(value);
+        } catch (e) {
+            out[name] = value;
+        }
+    });
+    return out;
+}
+
 exports.init = function(app) {
     sio = require("socket.io")(app, {path: config.path + "/socket.io"});
 
     sio.on("connection", function(socket) {
         socket.join(student_room);
 
-        socket.on("authenticate", function (auth) {
-            if (!auth) {
-                return;
-            }
-            model.Session.findOne({
-                where: {session_key: String(auth)},
-                include: [{model: model.TA, as: "TA"}]
-            }).then(function(user) {
-                if (user) {
-                    socket.session = user;
-                    if (user.TA || user.owner) {
-                        socket.leave(student_room);
-                        socket.join(ta_room);
-                    }
+        // The session key is read out of the handshake's own Cookie header
+        // rather than being sent to us by the client.  That keeps the auth
+        // cookie httpOnly, and means a client can only ever authenticate as
+        // whoever the browser actually has a cookie for.
+        var auth = parse_cookies(socket.handshake.headers.cookie).auth;
+        if (!auth) {
+            return;
+        }
+        model.Session.findOne({
+            where: {session_key: String(auth)},
+            include: [{model: model.TA, as: "TA"}]
+        }).then(function(user) {
+            if (user) {
+                socket.session = user;
+                if (user.TA || user.owner) {
+                    socket.leave(student_room);
+                    socket.join(ta_room);
                 }
-            });
+            }
+        }).catch(function(err) {
+            console.error("ERROR: socket authentication failed:", err.message);
         });
     });
 };

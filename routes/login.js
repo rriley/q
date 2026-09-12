@@ -4,78 +4,123 @@ var google = require('googleapis').google;
 var config = require("../config.json");
 var model = require("../model.js");
 var options = require("./options.js");
+var cookies = require("../cookies.js");
 
 var oauth2Client = new google.auth.OAuth2(config.google_id, config.google_secret,
   config.protocol + "://" + config.domain + config.path + "/oauth2/callback"
 );
-var auth_url = oauth2Client.generateAuthUrl({
-  scope: ["profile", "email"],
-  hd: "andrew.cmu.edu"
-});
-var auth_url_nodomaincheck = oauth2Client.generateAuthUrl({
-  scope: ["profile", "email"]
-});
+
+// Which Google Workspace domain accounts have to belong to.  Set
+// "allowed_domain" to "" (or null) in config.json to accept any Google
+// account.  The owner is always allowed through, so an install whose
+// owner_email is a personal address can still be set up.
+var allowed_domain = config.allowed_domain === undefined
+    ? "andrew.cmu.edu"
+    : config.allowed_domain;
+
+// An error whose message is safe to show the user.  Anything else that comes
+// out of the OAuth flow is logged but reported generically.
+function PublicError(message) {
+    this.message = message;
+}
+PublicError.prototype = Object.create(Error.prototype);
+PublicError.prototype.name = "PublicError";
+
+function auth_url(state, domaincheck) {
+    var params = {
+        scope: ["profile", "email"],
+        state: state
+    };
+    // Only a hint for the account chooser -- Google will still hand us
+    // whatever account the user picks, so get_callback does the real check.
+    if (domaincheck && allowed_domain) {
+        params.hd = allowed_domain;
+    }
+    return oauth2Client.generateAuthUrl(params);
+}
 
 exports.get_login = function(req, res) {
     if (req.session && req.session.authenticated) {
         res.redirect(config.path+"/");
-    } else if (req.query.domaincheck == 0) {
-        res.redirect(auth_url_nodomaincheck);
-    } else {
-        res.redirect(auth_url);
+        return;
     }
+    // Bind this login attempt to the browser that started it, so nobody can
+    // hand a victim a callback URL for an account the attacker controls.
+    var state = crypto.randomBytes(32).toString("hex");
+    res.cookie("oauth_state", state, cookies.oauth_state());
+    res.redirect(auth_url(state, req.query.domaincheck != 0));
 };
 
 exports.get_callback = function(req, res) {
     var key = crypto.randomBytes(72).toString('base64');
-    var semesterP = options.current_semester();
-    var errorHandler = function(error) {
-        if (error) {
-            console.log("ERROR: " + JSON.stringify(error));
-            res.send("ERROR: " + error);
+    var expected_state = req.cookies.oauth_state;
+    var email;
+
+    res.clearCookie("oauth_state", cookies.auth_clear());
+
+    function fail(error) {
+        console.log("ERROR: oauth callback failed: " + ((error && error.stack) || error));
+        if (res.headersSent) {
+            return;
         }
-    };
-    var emailP = oauth2Client.getToken(req.query.code)
-    .then(function(result) {
+        res.cookie("toast", error instanceof PublicError
+            ? error.message
+            : "Sign-in failed. Please try again.", {path: config.path});
+        res.redirect(config.path + "/");
+    }
+
+    if (!expected_state || !req.query.state || req.query.state !== expected_state) {
+        fail(new PublicError("Your sign-in attempt expired. Please try again."));
+        return;
+    }
+
+    oauth2Client.getToken(req.query.code).then(function(result) {
         return google.oauth2("v2").userinfo.get({
             access_token: result.tokens.access_token
         });
     }).then(function(userinfo) {
-        return userinfo.data.email;
-    }).catch(errorHandler);
-    var taP = Promise.all([semesterP, emailP, model.sql.sync()])
-    .then(function(results) {
-        var semester = results[0];
-        var email = results[1];
+        var profile = userinfo.data;
+        // Google only vouches for the address if it says it's verified.
+        if (!profile.email || !profile.verified_email) {
+            throw new PublicError("Your Google account's email address isn't verified.");
+        }
+        // Without this, any Google account whose local part matches an Andrew
+        // ID would be treated as that student everywhere we compare user_id.
+        if (allowed_domain
+                && profile.hd !== allowed_domain
+                && profile.email !== config.owner_email) {
+            throw new PublicError("Please sign in with your " + allowed_domain + " account.");
+        }
+        email = profile.email;
+        return Promise.all([options.current_semester(), model.sql.sync()]);
+    }).then(function(results) {
         return model.TA.findOne({
             where: {
                 email: email,
-                semester: semester
+                semester: results[0]
             }
         });
-    }).catch(errorHandler);
-    Promise.all([emailP, taP])
-    .then(function(results) {
-        var email = results[0];
-        var ta = results[1];
+    }).then(function(ta) {
         return model.Session.create({
             "email": email,
-            "user_id": email.substring(0,email.indexOf("@")),
+            "user_id": email.substring(0, email.indexOf("@")),
             "session_key": key,
             "authenticated": true,
             "ta_id": ta ? ta.id : null,
             "owner": email == config.owner_email
         });
     }).then(function() {
-        res.cookie("auth", key, {"maxAge": 30*24*60*60*1000});
+        res.cookie("auth", key, cookies.auth());
         res.redirect(config.path+"/");
-    }).catch(errorHandler);
+    }).catch(fail);
 };
 
 exports.get_logout = function(req, res) {
-    if (req.session) {
-        req.session.destroy();
-    }
-    res.clearCookie("auth");
-    res.redirect(config.path+"/");
+    var destroyed = req.session ? req.session.destroy() : Promise.resolve();
+    destroyed.catch(function(error) {
+        console.log("ERROR: could not destroy session: " + error.message);
+    }).then(function() {
+        res.clearCookie("auth", cookies.auth_clear());
+        res.redirect(config.path+"/");
+    });
 };
